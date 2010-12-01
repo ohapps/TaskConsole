@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<project name="TaskConsole" default="update" basedir=".">	
+    
+	<target name="update">		
+		<echo msg="updating code ..." />
+		<svnupdate
+		   svnpath="/usr/bin/svn"
+		   repositoryurl="http://ohapps.com/repos/TaskConsole/trunk/TaskConsole/"
+		   todir="."		   
+		/>
+    </target>
+	
+    <target name="test" depends="update">
+    	<echo msg="testing code ..." />
+    	<phpunit haltonfailure="true" printsummary="true">
+    		<batchtest>
+    			<fileset dir="./tests/models">
+    				<include name="*Test.php" />
+    			</fileset>
+    		</batchtest>
+    	</phpunit>
+    </target> 
+	
+	<target name="document">    	
+	    <echo msg="documenting code ..." />	 		
+		<phpdoc title="TaskConsole API Documentation"
+		  destdir="../api/taskconsole"
+		  sourcecode="no"
+		  output="HTML:Smarty:PHP">
+		   <fileset dir="./application">
+		      <include name="models/*.php" />
+		   	  <include name="controllers/*.php" />
+		   </fileset>		   
+		</phpdoc>		
+	</target>
+	
+	<target name="clear">
+		<echo msg="deleting cached files ..." />
+		<delete>
+		  <fileset dir="./tmp">
+		    <include name="*" />
+		  </fileset>
+		</delete>
+	</target>
+	
+	<target name="migrate">
+		<echo msg="running database migrations ..." />
+		<exec command="oh_migrate" dir="." passthru="true" />	
+	</target>
+	
+	<target name="upgrade">
+	    <phingcall target="update"></phingcall>
+		<phingcall target="clear"></phingcall>		
+		<phingcall target="document"></phingcall>
+	</target>
+		
+</project>

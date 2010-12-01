@@ -1,0 +1,344 @@
+<div id="note_panel"></div>
+
+<script type="text/javascript">
+
+/**************************************
+ * EDIT TOPICS WINDOW
+ *************************************/
+
+var Topic = Ext.data.Record.create([
+    {name: "ID", type: "string"},    
+    {name: "DESCRIPTION", type: "string"}               
+]);
+
+var topic_store = new Ext.data.Store({ 
+	url: "<?= $this->baseUrl(); ?>/notes/get-topics", 
+	reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, Topic ), 
+	autoLoad: true 
+});
+
+var topic_cm = new Ext.grid.ColumnModel([
+  { id: "id", header: "ID", dataIndex: "ID", hidden: true },  
+  { id: "DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200, editor: new Ext.form.TextField({ allowBlank: false }) }         
+]);
+
+topic_cm.defaultSortable = true;
+    
+var topic_grid = new Ext.ux.EasyEditorGridPanel({
+		
+    store: topic_store,
+    cm: topic_cm,    
+    clicksToEdit:1,
+    autoExpandColumn: "DESCRIPTION",
+    frame:true,    
+    stripeRows: true,
+    selModel: new Ext.grid.RowSelectionModel( {singleSelect:true} ),
+    loadMask: true,
+
+    tbar: [
+              { 
+                  text: "Add",
+                  icon: "/images/add.png",
+                  handler : function(){
+                  		topic_grid.addNewRow({ rec : new Topic({ ID: "", DESCRIPTION: "" }) });
+                  }
+              },
+              {
+                  text: "Delete",
+                  icon: "/images/delete.png",
+                  handler : function(){
+						Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this item?", function(btn){ 
+                          	if ( btn == "yes"){
+                            	topic_grid.deleteSelectedRows( { url: "<?= $this->baseUrl(); ?>/notes/delete-topic" } );
+                          	}
+                      	});                                                                                                                                                                                                                                                                                                                                                                 
+                  }              
+              },
+              {
+                  text: "Save",
+                  icon: "/images/bullet_disk.png",
+                  handler : function(){
+    					topic_grid.postGrid( { url: "<?= $this->baseUrl(); ?>/notes/save-topic", updatePK : true, maskSave: true });
+                  }              
+              }
+          ]
+});
+
+topic_window = new Ext.Window({
+                                        
+    title: "Edit Topics",                                            
+    layout:"fit",
+    width:400,
+    height:300,
+    closeAction:"hide",
+    modal: true,
+    plain: true,
+    bodyStyle:"padding:5px;",
+    items: topic_grid
+    
+});        
+
+
+/**************************************
+ * TOPIC TREE
+ *************************************/
+
+var topic_tree_tb = new Ext.Toolbar({  
+  items: [
+            {  
+                text : "Edit Topics",
+                icon: "/images/application_edit.png",
+                handler: function(){
+            		topic_window.show();
+                }
+            }
+  ]
+});
+
+var note_search = new Ext.form.TextField({		
+    hideLabel: true, 
+    name: "keyword",
+    emptyText: "enter keywords",
+    width: 140
+});
+
+var topic_tree_bb = new Ext.Toolbar({  
+	  items: [
+	            note_search,
+	            {
+					xtype: "button",
+					text: "SEARCH",
+					width: 50,
+					handler: function(){
+						
+		            	topic_tree.getRootNode().id = note_search.getValue();
+		            	topic_tree.getRootNode().reload();		            				            	
+		            			            
+	            	}
+	            }
+	  ]
+});
+
+var tree_loader = new Ext.tree.TreeLoader({
+    dataUrl: '<?= $this->baseUrl(); ?>/notes/load-topics',            
+    preloadChildren: true            
+});
+
+var tree_root = new Ext.tree.AsyncTreeNode({
+	text: 'Topics',
+    id: 'root',    
+    expanded: true            
+});
+
+var topic_tree = new Ext.tree.TreePanel({
+                                
+        title: "Topics",
+        autoScroll:true,        
+        animate:true,        
+        containerScroll: true,                                 
+        tbar: topic_tree_tb,
+        bbar: topic_tree_bb,        
+        region: "west",
+        split:true,
+        width: 200,
+        minSize: 200,
+        maxSize: 300,
+        layout:'fit',
+        margins:'0 0 0 5',
+        collapsible: true,                
+        loader: tree_loader,        
+        root: tree_root,        
+        rootVisible: true
+        
+});
+
+
+/**************************************
+ * NOTE FORM
+ *************************************/
+
+var note_form = new Ext.form.FormPanel({
+    
+    baseCls: "x-plain",
+    labelWidth: 100,                                                            
+    id: "note_form",    
+              
+    items: [              
+              
+              { xtype: "textfield", fieldLabel: "Description", name: "DATA[DESCRIPTION]", width: 300, allowBlank: false },
+              { xtype: "combo", fieldLabel: "Topic", hiddenName: "DATA[TOPIC_ID]", width: 300, allowBlank: false, store: topic_store, valueField: "ID", displayField: "DESCRIPTION", typeAhead: true, mode: "local", triggerAction: "all", emptyText: " ", selectOnFocus: true, editable: false },
+              { xtype: "htmleditor", name: "DATA[CONTENTS]", height: 320, width: 625, hideLabel: true },
+              { xtype: "hidden", name: "DATA[ID]" }
+              
+            ],
+    
+    buttons: [  
+                {
+                    text:"SAVE",
+                    handler: function(){
+                        if ( note_form.getForm().isValid() ){
+                                note_form.getForm().submit({
+                                    url:"<?= $this->baseUrl(); ?>/notes/save-note", 
+                                    waitMsg:"Saving Note ...",
+                                    success: function(frm,act){
+                                    	note_form.getForm().findField("DATA[ID]").setValue(act.result.id);                                    	
+                                    	topic_tree.getRootNode().reload();
+                                    	loadNote(act.result.id);
+                                    },
+                                    failure: function(){ 
+                                        Ext.Msg.alert("Error", "The document could not be uploaded."); 
+                                    }
+                                });
+                        }
+                    }                                  
+                },{
+                    text: "CLOSE",
+                    handler: function(){                        
+                        note_window.hide();
+                    }
+                }
+              ]
+});
+
+
+note_window = new Ext.Window({
+                                        
+    title: "Edit Note",                                            
+    layout:"fit",
+    width:650,
+    height:450,
+    closeAction:"hide",    
+    bodyStyle:"padding:5px;",
+    items: note_form
+    
+});              
+
+
+/**************************************
+ * NOTE PANEL
+ *************************************/
+
+var note_panel = new Ext.Panel({
+	
+	title: "Note",	                                   
+    region: "center",    
+    bodyStyle: "padding:5px;",
+    contentEl: "note_panel",
+    autoScroll: true,
+    margins:'0 5 0 0',
+    
+    tbar: [
+              { 
+                  text: "New Note",
+                  icon: "/images/add.png",
+                  handler : function(){
+            	  		note_form.getForm().reset();
+                  		note_window.show();
+                  }
+              }
+           ]
+    	
+});
+
+
+/**************************************
+ * MISC FUNCTIONS
+ *************************************/
+
+function loadNote(note_id){
+	
+	note_panel.load({
+		url: "<?= $this->baseUrl(); ?>/notes/view",
+		params: {id:note_id},
+		text: "Loading ..."
+	});
+	
+}
+
+
+function editNote(note_id){
+	note_window.show();	
+	note_form.getForm().load({                    
+        url: "<?= $this->baseUrl(); ?>/notes/load-note",
+        params: {id:note_id},
+        waitMsg:"Loading Note",                      
+        failure: function(){ 
+            Ext.Msg.alert("Error", "The note could not be loaded.  Please contact an administrator to resolve this issue."); 
+        },                      
+        success: function(frm,act){                         
+            
+        }                      
+    });                        
+}
+
+
+function deleteNote(note_id){
+	Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this note?", function(btn){ 
+		if ( btn == "yes"){
+			note_panel.load({
+				url: "<?= $this->baseUrl(); ?>/notes/delete",
+				params: {id:note_id},
+				text: "Deleting ...",				 
+        		callback: function(){                         
+            		topic_tree.getRootNode().reload();
+        		}                      
+			});
+		}
+	});
+}
+
+
+/**************************************
+ * INITIAL LOAD
+ *************************************/
+
+Ext.onReady(function() {   	
+
+	
+	/**************************************
+ 	* DISPLAY LAYOUT
+ 	*************************************/
+	
+	var viewport = new Ext.Viewport({
+		
+	            layout:'border',
+	            style:'background: #DFDFDF;',
+	            items:[ 
+	            		new Ext.BoxComponent({ 
+	                    	region:'north',
+	                    	el: 'header',
+	                    	height:90
+	                	}),
+	            		topic_tree, 
+	            		note_panel,
+	            		new Ext.BoxComponent({ 
+	                    	region:'south',
+	                    	el: 'footer',
+	                    	height: 50
+	                	})
+	            ]
+	});
+	
+	
+	/**************************************
+	 * LISTENERS
+	 *************************************/
+   	
+	topic_window.on('hide', function(){
+		topic_tree.getRootNode().reload();
+	});   
+
+
+	/**************************************
+ 	* LOAD NOTE IF ID IS PASSED
+ 	*************************************/
+		
+	<?php if( $this->note_id != "" ){ ?>
+
+	loadNote("<?= $this->note_id ?>");
+
+	<?php } ?> 
+	
+});	
+
+</script>

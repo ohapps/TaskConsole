@@ -1,0 +1,102 @@
+/*******
+yellow 		#FAEE28
+black		#4D4D4D
+gray		#DFDFDF 
+dark gray	#9F9F9F
+light gray  #EFEFEF
+*******/
+
+body{ 
+	margin: 0px; 	 
+	font: 11px Verdana, Geneva, Arial, Helvetica, sans-serif; 
+}
+
+a{
+	text-decoration: none;	
+}
+
+#header{ 
+	height: 90px;
+	background: url('../images/banner_bg3.png') repeat-x #DFDFDF; 
+}
+
+#footer{
+	text-align: right;
+	margin-top: 10px;
+	padding: 0px 10px;	
+}
+
+#logo{
+	float: left; 
+	clear: right;
+	width: 1000px;
+	height: 76px;
+	background: url('../images/logo3.png') no-repeat;	
+}
+
+#lnks{ 
+	float: right; 
+	clear: right;
+	width: 550px; 	 
+}
+
+#user_lnks { 
+	height: 36px; 
+	text-align: right; 
+	color: #4D4D4D; 
+	padding: 5px; 
+}
+
+#main_lnks{ 
+	height: 18px; 
+	text-align: left; 
+}
+
+#main_lnks  ul{
+	margin-left: 0;
+	padding-left: 0; 
+	display: inline; 
+}
+
+#main_lnks	li { 
+	display: inline; 
+	list-style: none; 
+	font-size: 16px; 
+	padding: 2px 5px 2px 15px; 
+	font-weight: bold; 
+}
+
+#main_lnks li a {
+	color: #9F9F9F;
+}
+
+#link_list{
+	padding: 5px 10px;
+	font-size: 12px;	
+}
+
+#link_list li{
+	padding: 2px 0px;
+}
+
+.note_hdr{ 
+	font-size: 14px; 
+	font-weight: bold;
+	border: 1px solid #D0D0D0; 
+	background: #ECECEC;
+	padding: 2px 4px;
+}
+
+.note_lnks{
+	font-size: 11px;
+	font-weight: normal;
+	padding: 2px;
+}
+
+.note_lnks a{
+	color: blue;
+}
+
+.note_body{ 
+	padding: 10px; 
+} 

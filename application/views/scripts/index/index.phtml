@@ -1,0 +1,232 @@
+<script type="text/javascript">
+		
+Ext.onReady(function() {
+   				
+   /*********************
+    * LINK PANEL
+    ********************/
+   
+	var link_panel = new Ext.Panel({
+   	                                                                                                            
+		   width: 220,
+		   region: 'west',
+		   border: false,
+		   split: false,
+		   bodyStyle:'background: #DFDFDF;',
+		   margins:'0 5 0 5',
+		   
+		   items: [
+		            {
+		            	title:'Links',
+		            	contentEl: 'link_list',
+		            	height: 100		            	
+		            }		           
+		          ]
+			   			   					              
+ 	});	
+	
+	
+	/*********************
+	* TASK GRIDS
+	********************/		
+	
+	var Task = Ext.data.Record.create([
+	    {name: "ID", type: "string"},
+	    {name: "PROJECT", type: "string"},
+	    {name: "DESCRIPTION", type: "string"},
+	    {name: "PRIORITY", type: "string"},
+	    {name: "DUE_DATE", type: "date", dateFormat: "Y-m-d"},    
+	    {name: "COMPLETE", type: "string"}            
+	]);
+	
+	var hp_task_cm = new Ext.grid.ColumnModel([	 	
+	    { id: "id", header: "ID", dataIndex: "ID", hidden: true },
+	    { header: "Complete", dataIndex: "COMPLETE", width: 60 },
+	    { header: "Priority", dataIndex: "PRIORITY", width: 60 },
+	    { header: "Project", dataIndex: "PROJECT", width: 250 },
+	    { id: "HP_DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200 },       
+	    { header: "Due Date", dataIndex: "DUE_DATE", width: 100, renderer: Ext.util.Format.dateRenderer("d-M-Y") }
+	]);
+
+	hp_task_cm.defaultSortable = true;
+	
+	var hp_task_store = new Ext.data.Store({ 
+		url: "<?= $this->baseUrl(); ?>/projects/get-user-high-priority-tasks", 
+		reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, Task), 
+		autoLoad: false 
+	});		
+	    
+	var hp_task_grid = new Ext.ux.EasyEditorGridPanel({
+		
+		title: 'High Priority Tasks (' + hp_task_store.getCount() + ')',		
+	    store: hp_task_store,
+	    cm: hp_task_cm,    
+	    clicksToEdit:1,
+	    autoExpandColumn: "HP_DESCRIPTION",
+	    frame:true,    
+	    stripeRows: true,
+	    selModel: new Ext.grid.RowSelectionModel( {singleSelect:true} ),
+	    loadMask: true	    
+
+	});
+	
+	var dr_task_cm = new Ext.grid.ColumnModel([	 	
+	    { id: "id", header: "ID", dataIndex: "ID", hidden: true },
+	    { header: "Complete", dataIndex: "COMPLETE", width: 60 },
+	    { header: "Priority", dataIndex: "PRIORITY", width: 60 },
+	    { header: "Project", dataIndex: "PROJECT", width: 250 },
+	    { id: "DR_DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200 },       
+	    { header: "Due Date", dataIndex: "DUE_DATE", width: 100, renderer: Ext.util.Format.dateRenderer("d-M-Y") }
+	]);
+
+	dr_task_cm.defaultSortable = true;
+	
+	var dr_task_store = new Ext.data.Store({ 
+		url: "<?= $this->baseUrl(); ?>/projects/get-user-near-due-tasks", 
+		reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, Task), 
+		autoLoad: false 
+	});		
+    
+	var dr_task_grid = new Ext.ux.EasyEditorGridPanel({
+		
+		title: 'Tasks Due Within 3 Days (' + dr_task_store.getCount() + ')',		
+	    store: dr_task_store,
+	    cm: dr_task_cm,    
+	    clicksToEdit:1,
+	    autoExpandColumn: "DR_DESCRIPTION",
+	    frame:true,    
+	    stripeRows: true,
+	    selModel: new Ext.grid.RowSelectionModel( {singleSelect:true} ),
+	    loadMask: true	    
+
+	});
+	
+	
+	/*********************
+	* NOTE GRID
+	********************/
+	
+	var Note = Ext.data.Record.create([
+	    {name: "ID", type: "string"},
+	    {name: "TOPIC", type: "string"},
+	    {name: "DESCRIPTION", type: "string"},	           
+	    {name: "LAST_VIEWED", type: "date", dateFormat: "Y-m-d"}	                           	                
+	]);
+	
+	function format_link(val){                        
+        return '<a href="<?= $this->baseUrl(); ?>/notes/index/id/' + val + '">VIEW</a>';                                                
+    }
+	
+	var note_cm = new Ext.grid.ColumnModel([	 	
+	    { id: "id", header: "", dataIndex: "ID", renderer: format_link, width: 50, hideable: false, sortable: false, menuDisabled: true },
+	    { header: "Topic", dataIndex: "TOPIC", width: 150 },	    	    
+	    { id: "NOTE_DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200 },       
+	    { header: "Last Viewed", dataIndex: "LAST_VIEWED", width: 100, renderer: Ext.util.Format.dateRenderer("d-M-Y") }
+	]);
+
+	note_cm.defaultSortable = true;
+	                           	
+	var note_store = new Ext.data.Store({ 
+		url: "<?= $this->baseUrl(); ?>/notes/recently-viewed", 
+		reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, Note), 
+		autoLoad: false 
+	});		
+	                           	    
+	var note_grid = new Ext.ux.EasyEditorGridPanel({
+	    
+		title: 'Recently Viewed Notes (' + note_store.getCount() + ')',                       				
+		store: note_store,
+		cm: note_cm,    
+		clicksToEdit:1,
+		autoExpandColumn: "NOTE_DESCRIPTION",
+		frame:true,    
+		stripeRows: true,
+		selModel: new Ext.grid.RowSelectionModel( {singleSelect:true} ),
+		loadMask: true	    
+
+	});
+	
+	
+ 	/*********************
+    * TAB PANEL
+    ********************/
+ 	
+ 	var tab_panel = new Ext.TabPanel({
+                    	
+			activeTab:0,                                                
+			minTabWidth: 200,
+			resizeTabs: true,
+			deferredRender: false,
+			region: 'center',
+			plain: true,
+			margins:'0 5 0 0',
+			                        
+            items:[                        
+                        
+                        hp_task_grid,
+                        dr_task_grid,                       
+                        note_grid                                                    
+                        
+					]                                        
+	});
+ 	
+ 	
+ 	/*********************
+    * LAYOUT
+    ********************/
+	
+   	var viewport = new Ext.Viewport({
+       
+       layout:'border',
+       style:'background: #DFDFDF;',
+            items:[ 
+            		new Ext.BoxComponent({ 
+                    	region:'north',
+                    	el: 'header',
+                    	height:90
+                	}),
+            		link_panel, 
+            		tab_panel,             		
+            		new Ext.BoxComponent({ 
+                    	region:'south',
+                    	el: 'footer',
+                    	height: 50
+                	})
+            ]
+   	});
+   
+    
+   	/*********************
+     * LOAD STORES
+     ********************/
+   	
+			
+	hp_task_store.load({
+		callback: function(){
+			hp_task_grid.setTitle('High Priority Tasks (' + hp_task_store.getCount() + ')');
+		}	
+	});
+			
+   	dr_task_store.load({
+		callback: function(){
+			dr_task_grid.setTitle('Tasks Due Within 3 Days (' + dr_task_store.getCount() + ')');
+		}
+	});
+			
+	note_store.load({
+		callback: function(){
+			note_grid.setTitle('Recently Viewed Notes (' + note_store.getCount() + ')');
+		}
+	});
+			   	
+   	   	   	
+});
+	
+</script>
+
+<ul id="link_list">
+	<li><a href="<?= $this->baseUrl(); ?>/projects">View Projects</a></li>
+	<li><a href="<?= $this->baseUrl(); ?>/notes">View Notes</a></li>
+	<li><a href="/home/user/profile">Edit Profile</a></li>	
+</ul>
+

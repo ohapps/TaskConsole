@@ -1,0 +1,21 @@
+<a href="<?= $this->baseUrl(); ?>/mobile">
+	<div class="item">Home</div>
+</a>
+<a href="<?= $this->baseUrl(); ?>/mobile/tasks/category/<?= $this->category ?>/project/<?= $this->project ?>">
+	<div class="item">Return To Task List</div>
+</a>
+<a href="<?= $this->baseUrl(); ?>/mobile/mark-task-complete/category/<?= $this->category ?>/project/<?= $this->project ?>/id/<?= $this->task->ID ?>">
+	<div class="item">Mark Task Complete</div>
+</a>
+
+<div class="sub_item">
+	<span style="font-weight: bold;">Project:</span> <?= $this->task->Project->DESCRIPTION ?>
+</div>
+
+<div class="sub_item">
+	<span style="font-weight: bold;">Priority:</span> <?= $this->task->Priority->DESCRIPTION ?>
+</div>
+
+<div class="sub_item">				
+	<?= $this->task->DESCRIPTION ?>		
+</div>

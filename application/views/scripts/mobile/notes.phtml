@@ -1,0 +1,17 @@
+<a href="<?= $this->baseUrl(); ?>/mobile">
+	<div class="item">Home</div>
+</a>
+
+<?php foreach( $this->topics as $topic ): ?>
+		
+	<div class="item"><?= $topic->DESCRIPTION ?></div>
+	
+	<?php foreach( $topic->Notes as $note ): ?>
+		
+		<a href="<?= $this->baseUrl(); ?>/mobile/view-note/id/<?= $note->ID ?>">
+			<div class="sub_item">&#187; <?= $note->DESCRIPTION ?></div>
+		</a>
+		
+	<?php endforeach; ?>			
+
+<?php endforeach; ?>

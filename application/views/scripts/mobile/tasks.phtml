@@ -1,0 +1,17 @@
+<a href="<?= $this->baseUrl(); ?>/mobile">
+	<div class="item">Home</div>
+</a>
+<a href="<?= $this->baseUrl(); ?>/mobile/projects">
+	<div class="item">View Categories</div>
+</a> 
+
+<?php foreach( $this->tasks as $task ): ?>
+
+	<a href="<?= $this->baseUrl(); ?>/mobile/task-detail/category/<?= $this->category ?>/project/<?= $this->project ?>/id/<?= $task->ID ?>">
+		<div class="sub_item <?= strtolower( $task->Priority->DESCRIPTION ) ?>">
+			<div style="font-weight: bold;"><?= $task->Project->DESCRIPTION ?> ( <?= $task->Priority->DESCRIPTION ?> Priority )</div>
+			<?= $task->DESCRIPTION ?>
+		</div>
+	</a>
+	
+<?php endforeach; ?>

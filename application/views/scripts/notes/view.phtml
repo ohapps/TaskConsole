@@ -1,0 +1,8 @@
+<div class="note_hdr">
+	<?= $this->note->DESCRIPTION ?>
+	<div class="note_lnks"><a href="javascript:editNote('<?= $this->note->ID ?>')">edit</a> - <a href="javascript:deleteNote('<?= $this->note->ID ?>')">delete</a> - last updated: <?= $this->formatDate( $this->note->LAST_UPDATE, 'd-M-Y' ) ?></div>
+</div>
+
+<div class="note_body">
+<?= $this->note->CONTENTS ?>
+</div>

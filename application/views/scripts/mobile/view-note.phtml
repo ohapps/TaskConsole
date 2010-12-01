@@ -1,0 +1,17 @@
+<a href="<?= $this->baseUrl(); ?>/mobile">
+	<div class="item">Home</div>
+</a>
+
+<a href="<?= $this->baseUrl(); ?>/mobile/notes">
+	<div class="item">Return To Notes</div>
+</a>
+
+<div class="sub_item">
+	
+	<span style="font-weight: bold;"><?= $this->note->DESCRIPTION ?></span>
+
+	<div style="padding: 20px;">
+		<?= $this->note->CONTENTS ?>
+	</div>
+	
+</div>

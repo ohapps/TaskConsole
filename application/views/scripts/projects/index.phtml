@@ -1,0 +1,782 @@
+<script type="text/javascript">
+	
+/**************************************
+ * EDIT CATEGORY WINDOW
+ *************************************/
+
+var Category = Ext.data.Record.create([
+    {name: "ID", type: "string"},    
+    {name: "DESCRIPTION", type: "string"}               
+]);
+
+var category_store = new Ext.data.Store({ url: "<?= $this->baseUrl(); ?>/projects/usercats", reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, Category), autoLoad: true });
+
+var category_cm = new Ext.grid.ColumnModel([
+  { id: "id", header: "ID", dataIndex: "ID", hidden: true },  
+  { id: "DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200, editor: new Ext.form.TextField({ allowBlank: false }) }         
+]);
+
+category_cm.defaultSortable = true;
+    
+var category_grid = new Ext.ux.EasyEditorGridPanel({
+		
+    store: category_store,
+    cm: category_cm,    
+    clicksToEdit:1,
+    autoExpandColumn: "DESCRIPTION",
+    frame:false,    
+    stripeRows: true,
+    selModel: new Ext.grid.RowSelectionModel( {singleSelect:true} ),
+    loadMask: true,
+
+    tbar: [
+              { 
+                  text: "New Category",
+                  icon: "/images/add.png",
+                  handler : function(){
+                  		category_grid.addNewRow({ rec : new Category({ ID: "", DESCRIPTION: "" }) });
+                  }
+              },
+              {
+                  text: "Delete Category",
+                  icon: "/images/delete.png",
+                  handler : function(){
+						Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this item?", function(btn){ 
+                          	if ( btn == "yes"){
+                            	category_grid.deleteSelectedRows( { url: "<?= $this->baseUrl(); ?>/projects/deletecat" } );
+                          	}
+                      	});                                                                                                                                                                                                                                                                                                                                                                 
+                  }              
+              },
+              {
+                  text: "Save Changes",
+                  icon: "/images/bullet_disk.png",
+                  handler : function(){
+    					category_grid.postGrid( { url: "<?= $this->baseUrl(); ?>/projects/savecat", updatePK : true });
+                  }              
+              }
+          ]
+});
+
+cat_window = new Ext.Window({
+                                        
+    title: "Edit Categories",                                            
+    layout:"fit",
+    width:400,
+    height:300,
+    closeAction:"hide",
+    modal: true,
+    plain: true,
+    bodyStyle:"padding:5px;",
+    items: category_grid
+    
+});        
+
+
+/**************************************
+ * EDIT PROJECT WINDOW
+ *************************************/
+
+var Project = Ext.data.Record.create([
+    {name: "ID", type: "string"},    
+    {name: "DESCRIPTION", type: "string"},               
+    {name: "COMMENTS", type: "string"},
+    {name: "CATEGORY", type: "float"},
+	{name: "COMPLETE", type: "float"}
+]);
+
+var all_projects_store = new Ext.data.Store({ 
+	url: "<?= $this->baseUrl(); ?>/projects/user-projects-all", 
+	reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, Project), 
+	autoLoad: false 
+});
+
+var category_combo = new Ext.form.ComboBox({ 
+	allowBlank: false, 
+	store: category_store, 
+	valueField: "ID", 
+	displayField: "DESCRIPTION", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: " ", 
+	selectOnFocus: true, 
+	editable: false 
+});
+
+var project_complete_combo = new Ext.form.ComboBox({ 
+	value: "0",
+	allowBlank: false, 
+	store: ynss, 
+	valueField: "key", 
+	displayField: "val", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: " ", 
+	selectOnFocus: true, 
+	editable: false 	
+});
+
+var project_cm = new Ext.grid.ColumnModel([
+  { id: "id", header: "ID", dataIndex: "ID", hidden: true },  
+  { id: "DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200, editor: new Ext.form.TextField({ allowBlank: false }) },
+  { header: "Category", dataIndex: "CATEGORY", width: 150, editor: category_combo, renderer: Ext.ux.comboBoxRenderer( category_combo ) },
+  { header: "Comments", dataIndex: "COMMENTS", width: 300, editor: new Ext.form.TextField({ allowBlank: false }) },
+  { header: "Complete", dataIndex: "COMPLETE", width: 60, editor: project_complete_combo, renderer: Ext.ux.comboBoxRenderer( project_complete_combo ) }
+]);
+
+project_cm.defaultSortable = true;
+    
+var project_grid = new Ext.ux.EasyEditorGridPanel({
+		
+    store: all_projects_store,
+    cm: project_cm,    
+    clicksToEdit:1,
+    autoExpandColumn: "DESCRIPTION",	
+    frame:false,    
+    stripeRows: true,
+    selModel: new Ext.grid.RowSelectionModel( {singleSelect:true} ),
+    loadMask: true,	
+
+    tbar: [
+              { 
+                  text: "New Project",
+                  icon: "/images/add.png",
+                  handler : function(){
+                  		project_grid.addNewRow({ rec : new Project({ ID: "", DESCRIPTION: "", COMMENTS: "", CATEGORY: "", COMPLETE: "" }) });
+                  }
+              },
+              {
+                  text: "Delete Project",
+                  icon: "/images/delete.png",
+                  handler : function(){
+						Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this item?", function(btn){ 
+                          	if ( btn == "yes"){
+                            	project_grid.deleteSelectedRows( { url: "<?= $this->baseUrl(); ?>/projects/deleteproject" } );
+                          	}
+                      	});                                                                                                                                                                                                                                                                                                                                                                 
+                  }              
+              },
+              {
+                  text: "Save Changes",
+                  icon: "/images/bullet_disk.png",
+                  handler : function(){
+    					project_grid.postGrid( { url: "<?= $this->baseUrl(); ?>/projects/saveproject", updatePK : true });
+                  }              
+              }
+          ]
+     
+          
+});
+
+
+project_window = new Ext.Window({
+                                        
+    title: "Edit Projects",                                            
+    layout:"fit",
+    width:800,
+	height:400,    
+    closeAction:"hide",
+    plain: true,    
+	modal: true,
+	bodyStyle:"padding:5px;",
+	items: project_grid
+    
+});     
+
+
+/**************************************
+ * PROJECT TREE
+ *************************************/
+
+var project_edit_menu = new Ext.menu.Menu({
+	    items: [        	
+				  	{  
+		                text : "Categories",
+		                icon: "/images/application_cascade.png",
+		                handler: function(){
+		                    cat_window.show();                    
+		                }
+		            },
+		            {
+		                text : "Projects",
+		                icon: "/images/folder_edit.png",
+		                handler: function(){
+		                	project_window.show();
+							all_projects_store.load();                	
+		                }
+		            }        
+	    		]
+});
+ 
+var project_tree_tb = new Ext.Toolbar({  
+  items: [
+            {  
+                text : "Edit",
+                icon: "/images/application_edit.png",
+                menu: project_edit_menu                
+            }
+  ]
+});
+
+var project_tree = new Ext.tree.TreePanel({
+                                
+        title: "Project List",
+        autoScroll:true,
+        animate:true,        
+        containerScroll: true,                                 
+        tbar: project_tree_tb,        
+        region: "west",
+        split:true,
+        width: 200,
+        minSize: 200,
+        maxSize: 300,
+        layout:'fit',
+        margins:'0 0 0 5',
+        collapsible: true,
+        
+        loader: new Ext.tree.TreeLoader({
+            dataUrl: '<?= $this->baseUrl(); ?>/projects/loadtree',
+            preloadChildren: true            
+        }),
+        
+        root: new Ext.tree.AsyncTreeNode({
+            text: 'All Categories',
+            id: 'root',
+            cls: 'folder',
+            href: "javascript:loadTasks( '', '' )",
+            expanded: true
+        }),
+        
+        rootVisible: true
+        
+});
+
+
+/**************************************
+ * TASK COMBOS AND STORES
+ *************************************/
+
+var project_store = new Ext.data.Store({ 
+	url: "<?= $this->baseUrl(); ?>/projects/userprojects", 
+	reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, ["ID","CAT_DESC"] ), 
+	autoLoad: true 
+});
+
+var project_combo = new Ext.form.ComboBox({ 
+	fieldLabel: "Project", 
+	hiddenName: "PROJ_ID", 
+	width: 300,
+	allowBlank: false, 
+	store: project_store, 
+	valueField: "ID", 
+	displayField: "CAT_DESC", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: " ", 
+	selectOnFocus: true, 
+	editable: false 
+});
+
+var priority_store = new Ext.data.Store({ 
+	url: "<?= $this->baseUrl(); ?>/projects/priorities", 
+	reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, ["ID","DESCRIPTION"] ), 
+	autoLoad: true 
+});
+
+var priority_combo = new Ext.form.ComboBox({ 
+	fieldLabel: "Priority", 
+	hiddenName: "PRIORITY_ID",
+	value: "2",
+	width: 100,
+	allowBlank: false, 
+	store: priority_store, 
+	valueField: "ID", 
+	displayField: "DESCRIPTION", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: " ", 
+	selectOnFocus: true, 
+	editable: false 
+});
+
+var complete_combo = new Ext.form.ComboBox({ 
+	fieldLabel: "Complete", 
+	hiddenName: "COMPLETE", 
+	value: "no",
+	width: 100,
+	allowBlank: false, 
+	store: ynss, 
+	valueField: "key", 
+	displayField: "val", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: " ", 
+	selectOnFocus: true, 
+	editable: false 
+});
+
+
+var recur_unit_type_store = new Ext.data.SimpleStore({ 
+	fields: ["label", "val"], 
+	data : [ 
+	    		["days","days"], 
+	    		["months","months"], 
+	    		["years","years"]
+	       ] 	     	
+});
+
+
+/**************************************
+ * TASK SHORTCUT KEYS
+ *************************************/
+
+var map = new Ext.KeyMap(document, 
+	[ 
+		{
+ 			key: Ext.EventObject.ENTER,
+			ctrl:true,
+	        shift:true,
+			fn: newTasks,
+			scope: this
+		},{
+			key: Ext.EventObject.INSERT,
+			ctrl:true,
+	        shift:true,
+			fn: saveTasks,
+			scope: this
+		}
+	]
+);
+
+
+/**************************************
+ * TASK DETAIL WINDOW
+ *************************************/
+
+var task_form = new Ext.form.FormPanel({
+	
+	id: "task_form",
+	labelWidth: 100,
+	baseCls: "x-plain",                      
+    defaultType: "textfield",
+	buttonAlign: "right",
+	keys: map,	           	
+        
+    items: [						
+		
+		project_combo,		
+		{ 
+			xtype: "textarea",
+			fieldLabel: "Description", 
+			name: "DESCRIPTION", 
+			width: 450,
+			height: 200
+		},{ 
+			xtype: "panel",  
+			baseCls: "x-plain",                      
+	      	layout:"column",
+	      	items:[
+		              {   
+		                 columnWidth:.50, 
+		                 layout: "form",             
+						 baseCls: "x-plain",                                        
+		                 items: [		                 		
+		                 			{ 
+										xtype: "datefield", 
+										fieldLabel: "Due Date", 
+										name: "DUE_DATE", 
+										width: 100,
+										allowBlank: true, 
+										format: "Y-m-d" 
+									},
+									priority_combo		
+		                 		]
+		              },{   
+		                 columnWidth:.50, 
+						 baseCls: "x-plain",                      
+		                 layout: "form",
+		                 labelWidth: 175,                               
+		                 items: [
+									{ 
+										xtype: "checkbox",
+										<?php if( $this->gdata_enabled == false ){ ?> 
+											hidden: true,
+											hideLabel: true, 
+										<?php } ?> 
+										fieldLabel: "Display on Google Calendar", 
+										name: "DISP_ON_GCAL",
+										inputValue: "1"																				 
+									}
+		                 		]
+		              }
+		      	  ]
+	    },{
+            xtype: 'fieldset',
+            title: 'Recurrence',            
+            autoHeight:true,
+            labelWidth: 400,                        
+            items :[	
+						{ 
+							xtype: "panel",  
+							baseCls: "x-plain",                      
+						  	layout:"column",
+						  	items:[
+						              {   
+						                 columnWidth:.85, 
+						                 layout: "form",             
+										 baseCls: "x-plain",                                        
+						                 items: [
+						                 			
+						                 			{
+									                	xtype: 'numberfield',
+									                	width: 50,	
+								                    	fieldLabel: 'Generate a copy of this task at the specified time from completion',
+								                    	name: 'RECUR_UNITS'
+								                	}		
+						                 		]
+						              },{   
+						                 columnWidth:.15, 
+										 baseCls: "x-plain",                      
+						                 layout: "form",                               
+						                 items: [
+													{
+														xtype: 'combo',
+														hideLabel: true, 
+														hiddenName: "RECUR_UNIT_TYPE",
+														value: "days", 			            	
+														width: 75,
+														allowBlank: true, 
+														store: recur_unit_type_store, 
+														valueField: "val", 
+														displayField: "label", 
+														typeAhead: true, 
+														mode: "local", 
+														triggerAction: "all", 
+														emptyText: " ", 
+														selectOnFocus: true, 
+														editable: false	                    	
+													}
+						                 		]
+						              }
+						      	]
+						}                                                                                                                                                                                                        	
+            		]
+        },{ 
+			xtype: "hidden",
+			name: "ID"
+		}
+    ],
+	
+	buttons: [  
+       	{ 			
+			text: "SAVE", 
+			handler: function(){ 
+				
+				saveTasks();							
+				
+			} 
+		},{ 
+			text: "DELETE", 
+			handler: function(){ 
+				
+				Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this item?", function(btn){ 
+                	if ( btn == "yes"){
+				 
+						Ext.Ajax.request({
+		   					url: '<?= $this->baseUrl(); ?>/projects/deletetasks',
+							params: { data: task_form.getForm().findField("ID").getValue() },
+		   					success: function(){
+								reloadTasks();
+								task_window.hide(); 
+							},
+		   					failure: function(){
+								Ext.Msg.alert("Error", "The task could not be deleted.");
+							}   					
+						});
+						
+					}
+                });  
+			} 
+		},{ 
+			text: "CLOSE", 
+			handler: function(){ 
+				task_window.hide(); 
+			} 
+		}					
+	]			
+	    	
+});
+
+
+task_window = new Ext.Window({
+                                        
+    title: "Task Details",                                            
+	id: "task_window",
+    closeAction:"hide",    
+    bodyStyle:"padding:5px;",
+	modal: true,
+	width: 600,
+	focus: function(){ this.items.item(0).items.item(0).focus(); },
+    items: task_form
+    
+});
+
+
+/**************************************
+ * TASK GRID
+ *************************************/
+
+
+var project_filters = new Object();
+project_filters.category = "";
+project_filters.project = "";
+
+var task_filters = new Ext.ux.grid.GridFilters( {
+	local:    false,
+	filters:  [
+				{ type: "list", dataIndex: "PRIORITY", options: ["Hide High Priority","Hide Normal Priority","Hide Low Priority"], phpMode: true },
+                { type: "list", dataIndex: "COMPLETE", options: ["Show Complete"], phpMode: true }
+               ]
+});
+
+var Task = Ext.data.Record.create([
+    {name: "ID", type: "string"},
+    {name: "PROJECT", type: "string"},
+    {name: "DESCRIPTION", type: "string"},
+    {name: "PRIORITY", type: "string"},
+    {name: "DUE_DATE", type: "date", dateFormat: "Y-m-d H:i:s"},    
+    {name: "COMPLETE", type: "string"},
+	{name: "COMPLETE_DATE", type: "date", dateFormat: "Y-m-d H:i:s"},
+	{name: "CATEGORY", type: "string"}
+]);
+
+var task_store = new Ext.data.Store({ 
+	url: "<?= $this->baseUrl(); ?>/projects/usertasks", 
+	baseParams: project_filters,
+	reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, Task), 
+	autoLoad: false 
+});
+
+var task_sm = new Ext.grid.CheckboxSelectionModel();
+
+var task_cm = new Ext.grid.ColumnModel([
+ 	task_sm,
+  	{ id: "id", header: "ID", dataIndex: "ID", hidden: true, sortable: true },
+  	{ header: "Complete", dataIndex: "COMPLETE", width: 60, sortable: true },
+  	{ header: "Priority", dataIndex: "PRIORITY", width: 60, sortable: true },
+  	{ header: "Category", dataIndex: "CATEGORY", width: 100, sortable: true },
+  	{ header: "Project", dataIndex: "PROJECT", width: 150, sortable: true },
+  	{ id: "DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: true },       
+  	{ header: "Due Date", dataIndex: "DUE_DATE", width: 100, renderer: Ext.util.Format.dateRenderer("Y-m-d"), sortable: true },
+	{ header: "Complete Date", dataIndex: "COMPLETE_DATE", width: 100, renderer: Ext.util.Format.dateRenderer("Y-m-d"), hidden: true, sortable: true }
+]);
+
+var task_edit_menu = new Ext.menu.Menu({
+    items: [        	
+			  { 
+                  text: "Add New Task",
+                  icon: "/images/add.png",
+                  handler : function(){   						                                                                                  
+				  		newTasks();
+                  }
+              },
+              {			  	
+				  text: "Edit Selected Task",
+				  icon: "/images/application_edit.png",
+                  handler : function(){    					
+    			  		loadTaskDetail();						
+                  }				  
+			  },{
+                  text: "Delete Selected Tasks",
+                  icon: "/images/delete.png",
+                  handler : function(){
+						Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this items?", function(btn){ 
+                          	if ( btn == "yes"){
+                          		task_grid.postSelectedIDs({ 
+		              	  			url: "<?= $this->baseUrl(); ?>/projects/deletetasks", 
+		              	  			postParam : "data[]", 
+		              	  			maskSave: true,
+		              	  			reloadOnChange: true		    						
+		              	  		});
+                          	}
+                      	});                                                                                                                                                                                                                                                                                                                                                              
+                  }              
+              }        
+    ]
+});
+
+var task_grid = new Ext.ux.EasyEditorGridPanel({
+	
+	title: "Task List",
+    store: task_store,
+    cm: task_cm,    
+    clicksToEdit:1,
+    autoExpandColumn: "DESCRIPTION",
+    frame:true,    
+    stripeRows: true,
+    selModel: task_sm,
+    loadMask: true,
+    region: "center",
+	margins:'0 5 0 0',
+	plugins: task_filters,
+	keys: map,
+
+    tbar: [
+              {
+              	  text: "Mark Completed",
+              	  icon: "/images/accept.png",
+              	  handler : function(){
+              	  		task_grid.postSelectedIDs({ 
+              	  			url: "<?= $this->baseUrl(); ?>/projects/markcomplete", 
+              	  			postParam : "data[]", 
+              	  			maskSave: true,
+              	  			reloadOnChange: true    						
+              	  		});
+              	  }
+              },                            
+              {
+                  text: "Edit List",
+                  icon: "/images/application_edit.png",
+                  menu: task_edit_menu				  
+			  }
+          ]
+});
+
+
+/**************************************
+ * MISC FUNCTION
+ *************************************/
+
+function newTasks(){
+	task_window.show();
+	task_form.getForm().reset();
+	project_combo.setValue( project_filters.project );
+}
+
+
+function saveTasks(){		
+	
+	if( task_window.isVisible() ){ 
+	
+		if ( task_form.getForm().isValid() ){
+			
+			task_form.getForm().submit({
+	        	url: "<?= $this->baseUrl(); ?>/projects/savetask", 
+	            waitMsg:"Saving Task ...",                                   
+	            success: function(){
+					reloadTasks();
+					task_window.hide(); 
+	            },
+	            failure: function(){ 
+	              	Ext.Msg.alert("Error", "The task could not be saved."); 
+	            }
+	        });
+			 
+		}
+	
+	}	
+	
+}
+
+function loadTasks( project, category ){
+
+	project_filters.category = category;
+	project_filters.project = project;
+	reloadTasks();
+	
+}
+
+
+function reloadTasks(){
+		
+	task_store.load();
+	
+}
+
+
+function loadTaskDetail(){
+	
+	task_id = task_grid.getSelectedRowId();                       
+    
+	if ( task_id == -1 ){
+    	Ext.Msg.alert("Alert", "Please select an item to edit. Only one item can be edited at a time.");
+    }else{
+        task_window.show();
+		task_form.getForm().load({                    
+	        url:"<?= $this->baseUrl(); ?>/projects/load-task-detail",
+			params: { id : task_id },
+	        waitMsg:"Loading Details ...",                      
+	        failure: function(){
+	            Ext.Msg.alert("Error", "The details could not be loaded."); 
+	        },                      
+	        success: function(frm,act){                         
+	                                                                  
+	        }                      
+	    });      
+    }	 		
+	
+}
+
+
+/**************************************
+ * INITIAL LOAD
+ *************************************/
+
+Ext.onReady(function() {   	
+   	   	   	
+	/**************************************
+ 	* DISPLAY LAYOUT
+ 	*************************************/
+	
+   	var viewport = new Ext.Viewport({
+            layout:'border',
+            style:'background: #DFDFDF;',
+            items:[ 
+            		new Ext.BoxComponent({ 
+                    	region:'north',
+                    	el: 'header',
+                    	height:90
+                	}),
+            		project_tree, 
+            		task_grid,             		
+            		new Ext.BoxComponent({ 
+                    	region:'south',
+                    	el: 'footer',
+                    	height: 50
+                	})
+            ]
+    });
+   	
+    
+    /**************************************
+	 * INITIALIZE TASK LIST
+	 *************************************/
+
+	 
+   	loadTasks('','');
+   	
+   	
+   	/**************************************
+	 * LISTENERS
+	 *************************************/
+   	
+   	cat_window.on('hide', function(){
+		project_tree.getRootNode().reload();
+	});
+	
+	project_window.on('hide', function(){
+		project_tree.getRootNode().reload();
+	});   	
+   	
+	task_grid.on("celldblclick", function(){
+		loadTaskDetail();
+	});					
+	
+});	
+	
+</script>
