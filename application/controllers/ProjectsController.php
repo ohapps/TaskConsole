@@ -210,9 +210,11 @@ class ProjectsController extends Zend_Controller_Action
     			throw new Exception('invalid project id');
     		}
     		
+    		/*
     		if( $project->Category->isUserProjectCategory($user->getUserId()) == false ){    			
     			throw new Exception('project category does not belong to current user');
     		}
+    		*/
     		
     		if( $this->_getParam('RECUR_UNIT_TYPE') != '' && in_array( $this->_getParam('RECUR_UNIT_TYPE'), array('days','months','years') ) == false ){
     			throw new Exception('invalid recur unit type');
@@ -359,10 +361,8 @@ class ProjectsController extends Zend_Controller_Action
 	   			$data[] = array(
 					"ID" => $project->ID,
 	   				"DESCRIPTION" => $project->DESCRIPTION,
-	   				"COMMENTS" => $project->COMMENTS,
-	   				"CATEGORY" => $project->CATEGORY,
-	   				"COMPLETE" => $project->COMPLETE,
-	   				"CAT_DESC" => $project->fullDesc()   			
+	   				"COMMENTS" => $project->COMMENTS,	   				
+	   				"COMPLETED" => $project->COMPLETED 			
 	   			);
     		}
    		}
@@ -402,79 +402,53 @@ class ProjectsController extends Zend_Controller_Action
     public function usertasksAction(){    	    	
     	    	    	    	    	    	    	
     	$data = array();
-    	$user = Zend_Registry::get('user');    	
-		
-		$options = array(
-			'category' 		=> '',
-			'project' 		=> '',
-			'complete' 		=> 0,
-			'disp_high'		=> 1,
-			'disp_normal' 	=> 1,
-			'disp_low' 		=> 1				
-		);    	    	    	     	          	    	
-		
-		if( $this->_hasParam( 'category' ) ){
-			$options['category'] = $this->_getParam('category');
-		}  	    	
-    	 
-		if( $this->_hasParam( 'project' ) ){
-			$options['project'] = $this->_getParam('project');
-		}
-		
-		if( $this->_hasParam( 'filter' ) ){
-			
-			if( is_array( $this->_getParam( 'filter' ) ) ){
-			
-				foreach( $this->_getParam( 'filter' ) as $filter ){
-					
-					switch( $filter["field"] ) {
-						
-					    case "COMPLETE":
-					        $options['complete'] = 1;
-					    	break;
-							
-						case "PRIORITY":
-							
-							if( strpos( $filter["data"]["value"], "Hide High Priority" ) !== false ){
-								$options['disp_high'] = 0;
-							}
-							
-							if( strpos( $filter["data"]["value"], "Hide Normal Priority" ) !== false ){
-								$options['disp_normal'] = 0;
-							}
-							
-							if( strpos( $filter["data"]["value"], "Hide Low Priority" ) !== false ){
-								$options['disp_low'] = 0;
-							}															
-							
-							break;
-							
-					}	
-					
-				}	
-				
-			}
-			
-		}		    	    	    	
+    	$user = Zend_Registry::get('user');
     	
-		$tasks = Doctrine_Core::getTable('Console_Task')->getByUserId($user->getUserId(),$options);				
+    	if( $this->_hasParam('start') === false || $this->_hasParam('limit') === false ){
+    		throw new Exception('missing start or limit parameter when loading user tasks');
+    	}
+    	
+    	if( is_numeric( $this->_getParam('start') ) === false || is_numeric($this->_getParam('limit')) === false ){
+    		throw new Exception('start or limit parameter is not a numeric value when loading user tasks');
+    	}
+    	
+		$limit = $this->_getParam('limit');
+        $start = ( ( $this->_getParam('start') / $limit ) + 1 );    			    			    	    	    	     	          	   				    	    	    
+    	
+		$pager = Doctrine_Core::getTable('Console_Task')->getPagedResultsByUserId(
+			$user->getUserId(),
+			array(
+				"category" => $this->_getParam('category'),
+				"project" => $this->_getParam('project'),
+				"sort" => $this->_getParam('sort'),
+				"dir" => $this->_getParam('dir'),
+				"status" => $this->_getParam('status'),
+				"priorities" => explode(",",$this->_getParam('priorities'))
+			),
+			$start,
+			$limit			
+		);
+
+		$tasks = $pager->execute();
+        $total = $pager->getNumResults();		
 		
 		foreach( $tasks as $task ){
 			$data[] = array(
 				"ID" => $task->ID,
-				"PROJ_ID" => $task->Project->ID,
-				"PROJECT" => $task->Project->DESCRIPTION,
+				"PROJECT_ID" => $task->PROJECT_ID,
+				"PROJECT" => ( $task->PROJECT_ID != null )? $task->Project->DESCRIPTION : "",
 				"DESCRIPTION" => $task->DESCRIPTION,
 				"PRIORITY_ID" => $task->PRIORITY_ID,
 				"PRIORITY" => $task->Priority->DESCRIPTION,
-				"DUE_DATE" => $task->DUE_DATE,
-				"COMPLETE" => $task->isComplete(),
-				"COMPLETE_DATE" => $task->COMPLETE_DATE,
-				"CATEGORY" => $task->Project->Category->DESCRIPTION
+				"DUE_DATE" => $task->DUE_DATE,				
+				"COMPLETED" => $task->COMPLETED,
+				"DISPLAY_DATE" => $task->DISPLAY_DATE
+				//"CATEGORY" => $task->Project->Category->DESCRIPTION
 			);
+		
 		}
 		
-		$this->_helper->json->sendJson( array("data" => $data ) ); 				
+		$this->_helper->json->sendJson( array( "results" => $total, "data" => $data ) ); 				
     	    	    	    	    	    	   
     }
 	
@@ -610,43 +584,120 @@ class ProjectsController extends Zend_Controller_Action
     	$tree = Array();
     	$user = Zend_Registry::get('user');    	    	    	    	    	
 
-    	$categories = Doctrine_Core::getTable('Console_ProjectCategory')->getByUserId($user->getUserId());
+    	$priorities =  Doctrine_Core::getTable('Console_Priority')->findAll();
+    	
+    	$children = array();
+    	
+    	foreach( $priorities as $priority ){
+    		
+    		$children[] = array( 
+	    		"id" => $priority->ID, 
+	    		"text" => $priority->DESCRIPTION, 
+	    		"leaf" => true, 
+    			"checked" => true  
+	    	);
+    		
+    	}
+    	
+    	if( count($children) > 0 ){
+    		
+    		$tree[] = array( 
+    			"id" => "priority_filter", 
+    			"text" => "filter by priority", 
+    			"cls" => "folder", 
+    			"expanded" => true,     			
+    			"children" => $children 
+    		);
+    		
+    	}
+    	
+    	$categories = Doctrine_Core::getTable('Console_Category')->getByUserId($user->getUserId());    	    	
+    	
+    	$children = array();
+    	
+    	if( count( $categories ) > 0 ){
+    		
+    		$children[] = array( 
+	    		"id" => "category_all", 
+	    		"text" => "all categories", 
+	    		"leaf" => true, 
+	    		"href" => "javascript:filterTasks('category', '')", 
+	    		"qtip" => "all categories"  
+	    	);
+    		
+    	}
     	
     	foreach( $categories as $category ){    		    		    		
-    		
-    		$children = array();
-    		
-    		foreach( $category->Projects as $project ){
-    			
-    			if( $project->isActive() ){
-	    			$children[] = array( 
-	    				"id" => "project_" . $project->ID, 
-	    				"text" => $project->DESCRIPTION, 
-	    				"leaf" => true, 
-	    				"href" => "javascript:loadTasks('". $project->ID ."', '". $category->ID ."')", 
-	    				"qtip" => $project->COMMENTS  
-	    			);
-    			}
-    			
-    		}
-    		
-    		if ( count($children) > 0 ){
-    			$tree[] = array( 
-    				"id" => "category_" . $category->ID, 
-    				"text" => $category->DESCRIPTION, 
-    				"cls" => "folder", 
-    				"expanded" => false, 
-    				"href" => "javascript:loadTasks('', '". $category->ID ."')", 
-    				"children" => $children 
-    			);    	
-    		}
+    		    		    		    		
+	    	$children[] = array( 
+	    		"id" => "category_" . $category->ID, 
+	    		"text" => $category->DESCRIPTION, 
+	    		"leaf" => true, 
+	    		"href" => "javascript:filterTasks('category', '". $category->ID ."')", 
+	    		"qtip" => $category->DESCRIPTION  
+	    	);    			    			    		    		    		
     			
     	}    	    	
-		    	    	    	
+    	
+   		if ( count($children) > 0 ){
+    		
+   			$tree[] = array( 
+    			"id" => "category_filter", 
+    			"text" => "filter by category", 
+    			"cls" => "folder", 
+    			"expanded" => true, 
+    			//"href" => "javascript:loadTasks('', '". $category->ID ."')", 
+    			"children" => $children 
+    		);
+    		    	
+    	}
+    	
+    	$projects = Doctrine_Core::getTable('Console_Project')->getByUserId($user->getUserId());    	    	    	    	    	    	
+    	
+    	$children = array();
+    	
+    	if( count($projects) > 0 ){
+    		
+    		$children[] = array( 
+	    		"id" => "project_all", 
+	    		"text" => "all projects", 
+	    		"leaf" => true, 
+	    		"href" => "javascript:filterTasks('project', '')", 
+	    		"qtip" => "all projects"  
+	    	);
+    		
+    	}
+    	
+    	foreach( $projects as $project ){    		    		    		
+    		    		    		    		
+	    	$children[] = array( 
+	    		"id" => "project_" . $project->ID, 
+	    		"text" => $project->DESCRIPTION, 
+	    		"leaf" => true, 
+	    		"href" => "javascript:filterTasks('project', '". $project->ID ."')", 
+	    		"qtip" => $project->COMMENTS  
+	    	);    			    			    		    		    		
+    			
+    	}    	    	
+    	
+   		if ( count($children) > 0 ){
+    		
+   			$tree[] = array( 
+    			"id" => "project_filter", 
+    			"text" => "filter by project", 
+    			"cls" => "folder", 
+    			"expanded" => true, 
+    			//"href" => "javascript:loadTasks('', '". $category->ID ."')", 
+    			"children" => $children 
+    		);
+    		    	
+    	}    	
+    	
     	$this->_helper->json->sendJson( $tree );
     	
     }
 
+    
 	/**
 	* returns a json response of the available priorities for a task
 	*/	 

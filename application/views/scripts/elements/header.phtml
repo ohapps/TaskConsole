@@ -1,14 +1,10 @@
 <div id="header">
 	<div id="logo">
-		<div id="lnks">
-			<div id="user_lnks">Welcome, <?= $this->user->getFirstName() ?> | <a href="<?= $this->logout_url ?>">logout</a></div>
-			<div id="main_lnks">
-				<ul>
-					<li><a href="<?= $this->baseUrl(); ?>">Overview</a></li>
-					<li><a href="<?= $this->baseUrl(); ?>/projects">Projects</a></li>
-					<li><a href="<?= $this->baseUrl(); ?>/notes">Notes</a></li>
-				</ul>
-			</div>
-		</div>
+		Task Console
 	</div>		
+	<div id="lnks">
+		<?php if( isset( $this->user ) ){ ?>
+		Welcome, <?= $this->user->getFirstName() ?> | <a href="<?= $this->logout_url ?>">logout</a>
+		<?php } ?>		
+	</div>			
 </div>

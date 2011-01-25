@@ -8,14 +8,22 @@ class Console_Note extends Doctrine_Record {
 		$this->setTableName('notes');
 		$this->hasColumn('ID', 'integer', 4, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => true,
              'autoincrement' => true,
              ));
+        $this->hasColumn('USER_ID', 'integer', 4, array(
+             'type' => 'integer',
+             'length' => 11,
+             'unsigned' => 1,
+             'primary' => false,
+             'notnull' => true,
+             'autoincrement' => false,
+             ));
     	$this->hasColumn('TOPIC_ID', 'integer', 4, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => false,
              'notnull' => true,
@@ -52,6 +60,12 @@ class Console_Note extends Doctrine_Record {
 
 	
 	public function setUp(){
+		$this->hasMany('Console_Project as Projects', array(
+                'local' => 'NOTE_ID',
+                'foreign' => 'PROJECT_ID',
+                'refClass' => 'Console_ProjectNote'
+            )
+        );
     	$this->hasOne('Console_Topic as Topic', array(
                 'local' => 'TOPIC_ID',
                 'foreign' => 'ID'

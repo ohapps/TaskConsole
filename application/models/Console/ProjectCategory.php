@@ -8,22 +8,22 @@ class Console_ProjectCategory extends Doctrine_Record {
 		$this->setTableName('project_categories');
 		$this->hasColumn('ID', 'integer', 4, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => true,
              'autoincrement' => true,
-             ));    	
-        $this->hasColumn('DESCRIPTION', 'string', null, array(
-             'type' => 'string',
-        	 'length' => 45,
-             'fixed' => false,
-             'primary' => false,
-             'notnull' => false,
-             'autoincrement' => false,
-             ));     	
-        $this->hasColumn('USER_ID', 'integer', 4, array(
+             ));    	             	
+        $this->hasColumn('CATEGORY_ID', 'integer', 4, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
+             'unsigned' => 1,
+             'primary' => false,
+             'notnull' => true,
+             'autoincrement' => false,
+             ));
+       	$this->hasColumn('PROJECT_ID', 'integer', 4, array(
+             'type' => 'integer',
+             'length' => 11,
              'unsigned' => 1,
              'primary' => false,
              'notnull' => true,

@@ -6,16 +6,16 @@ class Console_Topic extends Doctrine_Record {
 	public function setTableDefinition(){
 		
 		$this->setTableName('topics');
-		$this->hasColumn('ID', 'integer', 4, array(
+		$this->hasColumn('ID', 'integer', 11, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => true,
              'autoincrement' => true,
              ));
-    	$this->hasColumn('USER_ID', 'integer', 4, array(
+    	$this->hasColumn('USER_ID', 'integer', 11, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => false,
              'notnull' => true,

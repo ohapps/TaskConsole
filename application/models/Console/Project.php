@@ -8,19 +8,19 @@ class Console_Project extends Doctrine_Record {
 		$this->setTableName('projects');
 		$this->hasColumn('ID', 'integer', 4, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => true,
              'autoincrement' => true,
              ));
-    	$this->hasColumn('CATEGORY', 'integer', 4, array(
+        $this->hasColumn('USER_ID', 'integer', 4, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => false,
              'notnull' => true,
              'autoincrement' => false,
-             ));			
+             ));           	
         $this->hasColumn('DESCRIPTION', 'string', null, array(
              'type' => 'string',
         	 'length' => 200,
@@ -36,10 +36,8 @@ class Console_Project extends Doctrine_Record {
              'notnull' => false,
              'autoincrement' => false,
              ));
-     	$this->hasColumn('COMPLETE', 'integer', 4, array(
-             'type' => 'integer',
-             'length' => 4,
-             'unsigned' => 1,
+     	$this->hasColumn('COMPLETED', 'timestamp', null, array(
+             'type' => 'timestamp',             
              'primary' => false,
              'notnull' => false,
              'autoincrement' => false,
@@ -48,14 +46,21 @@ class Console_Project extends Doctrine_Record {
 	
 	
 	public function setUp(){
-    	$this->hasOne('Console_ProjectCategory as Category', array(
-                'local' => 'CATEGORY',
-                'foreign' => 'ID'
+    	$this->hasMany('Console_Category as Categories', array(
+                'local' => 'PROJECT_ID',
+                'foreign' => 'CATEGORY_ID',
+                'refClass' => 'Console_ProjectCategory'
+            )
+        );
+        $this->hasMany('Console_Note as Notes', array(
+                'local' => 'PROJECT_ID',
+                'foreign' => 'NOTE_ID',
+                'refClass' => 'Console_ProjectNote'
             )
         );
         $this->hasMany('Console_Task as Tasks', array(
                 'local' => 'ID',
-                'foreign' => 'PROJ_ID'
+                'foreign' => 'PROJECT_ID'
             )
         );
     }
@@ -67,7 +72,7 @@ class Console_Project extends Doctrine_Record {
     
     
     public function isActive(){
-    	if( $this->COMPLETE == 0 ){
+    	if( $this->COMPLETED == null ){
     		return true;
     	}else{
     		return false;

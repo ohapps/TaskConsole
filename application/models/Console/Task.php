@@ -6,16 +6,24 @@ class Console_Task extends Doctrine_Record {
 	public function setTableDefinition(){
 		
 		$this->setTableName('tasks');
-		$this->hasColumn('ID', 'integer', 4, array(
+		$this->hasColumn('ID', 'integer', 11, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => true,
              'autoincrement' => true,
              ));
-    	$this->hasColumn('PROJ_ID', 'integer', 4, array(
+        $this->hasColumn('USER_ID', 'integer', 11, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
+             'unsigned' => 1,
+             'primary' => false,
+             'notnull' => true,
+             'autoincrement' => false,
+             ));
+    	$this->hasColumn('PROJECT_ID', 'integer', 11, array(
+             'type' => 'integer',
+             'length' => 11,
              'unsigned' => 1,
              'primary' => false,
              'notnull' => true,
@@ -41,16 +49,8 @@ class Console_Task extends Doctrine_Record {
              'primary' => false,
              'notnull' => false,
              'autoincrement' => false,
-             ));
-        $this->hasColumn('COMPLETE', 'integer', 4, array(
-             'type' => 'integer',
-             'length' => 4,
-             'unsigned' => 1,
-             'primary' => false,
-             'notnull' => true,
-             'autoincrement' => false,
-             ));     
-        $this->hasColumn('COMPLETE_DATE', 'timestamp', null, array(
+             ));            
+        $this->hasColumn('COMPLETED', 'timestamp', null, array(
              'type' => 'timestamp',
              'primary' => false,
              'notnull' => false,
@@ -64,9 +64,9 @@ class Console_Task extends Doctrine_Record {
              'notnull' => false,
              'autoincrement' => false,        	 
              ));
-        $this->hasColumn('RECUR_UNITS', 'integer', 4, array(
+        $this->hasColumn('RECUR_UNITS', 'integer', 11, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => false,
              'notnull' => false,
@@ -78,26 +78,26 @@ class Console_Task extends Doctrine_Record {
              'notnull' => false,
              'autoincrement' => false,
              ));
-        $this->hasColumn('ORIG_ID', 'integer', 4, array(
+        $this->hasColumn('ORIG_ID', 'integer', 11, array(
              'type' => 'integer',
-             'length' => 4,
+             'length' => 11,
              'unsigned' => 1,
              'primary' => false,
              'notnull' => false,
              'autoincrement' => false,
-             ));
-        $this->hasColumn('DISP_ON_GCAL', 'integer', 4, array(
-             'type' => 'integer',
-             'length' => 4,
-             'unsigned' => 1,
-             'primary' => false,
-             'notnull' => true,
-             'autoincrement' => false,
-             ));     
+             ));             
         $this->hasColumn('GCAL_ID', 'string', null, array(
              'type' => 'string',
         	 'length' => 255,
              'fixed' => false,
+             'primary' => false,
+             'notnull' => false,
+             'autoincrement' => false,
+             ));
+        $this->hasColumn('QUEUE_ORDER', 'integer', 11, array(
+             'type' => 'integer',
+             'length' => 11,
+             'unsigned' => 1,
              'primary' => false,
              'notnull' => false,
              'autoincrement' => false,
@@ -107,13 +107,19 @@ class Console_Task extends Doctrine_Record {
 	
 	public function setUp(){
     	$this->hasOne('Console_Project as Project', array(
-                'local' => 'PROJ_ID',
+                'local' => 'PROJECT_ID',
                 'foreign' => 'ID'
             )
         );
         $this->hasOne('Console_Priority as Priority', array(
                 'local' => 'PRIORITY_ID',
                 'foreign' => 'ID'
+            )
+        );
+        $this->hasMany('Console_Category as Categories', array(
+                'local' => 'TASK_ID',
+                'foreign' => 'CATEGORY_ID',
+                'refClass' => 'Console_TaskCategory'
             )
         );        
     }
@@ -171,7 +177,7 @@ class Console_Task extends Doctrine_Record {
     	}
     	 
     }
-    
+        
     
     public function isComplete(){
     	return strtr($this->COMPLETE,array( "1"=>"yes", "0"=>"no" ));
