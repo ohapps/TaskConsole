@@ -1,5 +1,23 @@
 <script type="text/javascript">
-		
+
+/*********************
+* CATEGORIES
+********************/
+var Category = Ext.data.Record.create([
+	{name: "ID", type: "string"},                               	
+	{name: "DESCRIPTION", type: "string"}
+]);
+
+var category_store = new Ext.data.Store({ 
+	url: "<?= $this->baseUrl(); ?>/projects/usercats",	 	
+	sortInfo: {
+		field: 'DESCRIPTION',
+		direction: 'ASC'
+	},
+	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Category), 
+	autoLoad: true 
+});
+
    				
 /*********************
 * TASK FILTER OBJECT
@@ -8,6 +26,7 @@ var task_filter = new Object();
 task_filter.category = '';
 task_filter.project = '';
 task_filter.priorities = '';
+task_filter.keyword = '';
 
 function filterTasks(filterBy,filterVal){
 
@@ -42,6 +61,10 @@ function filterTasks(filterBy,filterVal){
    	task_pending_store.load({ params: { start: 0, limit: 50 } });
    	task_complete_store.load({ params: { start: 0, limit: 50 } });
    	task_upcoming_store.load({ params: { start: 0, limit: 50 } });
+
+   	if( task_filter.keyword != '' ){
+   		task_search_store.load({ params: { start: 0, limit: 50 } });
+   	}
 	
 }
 
@@ -97,22 +120,35 @@ var Task = Ext.data.Record.create([
 	{name: "PROJECT", type: "string"},
 	{name: "DESCRIPTION", type: "string"},
 	{name: "PRIORITY", type: "string"},
-	{name: "DUE_DATE", type: "date", dateFormat: "Y-m-d"},    
-	{name: "COMPLETED", type: "date", dateFormat: "Y-m-d"},
-	{name: "DISPLAY_DATE", type: "date", dateFormat: "Y-m-d"},
-	{name: "COMPLETE", type: "string"},
-	{name: "QUEUE_ORDER", type: "float"}
+	{name: "DUE_DATE", type: "date", dateFormat: "Y-m-d H:i:s"},    
+	{name: "COMPLETED", type: "date", dateFormat: "Y-m-d H:i:s"},
+	{name: "DISPLAY_DATE", type: "date", dateFormat: "Y-m-d H:i:s"},	
+	{name: "QUEUE_ORDER", type: "float"},
+	{name: "CATEGORIES", type: "string"}
 ]);
+
+function formatEditTaskLink(value, metaData, record, rowIndex, colIndex, store){	
+	lnk = "javascript:loadTask('"+ value + "');";
+    return '<a href="'+ lnk +'" title="edit" style=""><img src="<?= $this->baseUrl() ?>/html/images/application_edit.png" /></a>';	            
+}
+
+function formatMoveInQueueLink(value, metaData, record, rowIndex, colIndex, store){	
+	upLnk = "javascript:moveInQueue('up','"+ value + "');";
+	downLnk = "javascript:moveInQueue('down','"+ value + "');";
+    return '<a href="'+ upLnk +'" title="move up" style=""><img src="<?= $this->baseUrl() ?>/html/images/arrow_up.png" /></a>&nbsp;<a href="'+ downLnk +'" title="move down" style=""><img src="<?= $this->baseUrl() ?>/html/images/arrow_down.png" /></a>';	            
+}
 
 var task_queue_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_queue_cm = new Ext.grid.ColumnModel([	 	
 	task_queue_sm,
-	{ id: "id", header: "ID", dataIndex: "ID", hidden: true },	
-	{ header: "Priority", dataIndex: "PRIORITY", width: 60, sortable: true },
-	{ header: "Due Date", dataIndex: "DUE_DATE", width: 100, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: true },
-	{ header: "Project", dataIndex: "PROJECT", width: 250, sortable: true },
-	{ id: "queue_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: true }       
+	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },
+	{ header: "", dataIndex: "ID", width: 50, menuDisabled: true, hideable: false, renderer: formatMoveInQueueLink },	
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false },
+	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: false },
+	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false },
+	{ id: "queue_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: false }       
 	
 ]);
                            	
@@ -120,6 +156,10 @@ var task_queue_store = new Ext.data.Store({
 	url: "<?= $this->baseUrl(); ?>/projects/usertasks/status/queue",
 	baseParams: task_filter, 
 	remoteSort: true,
+	sortInfo: {
+		field: 'QUEUE_ORDER',
+		direction: 'ASC'
+	},
 	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Task), 
 	autoLoad: false 
 });		
@@ -130,6 +170,20 @@ var task_queue_pagingbar = new Ext.PagingToolbar({
     displayInfo: true,
     displayMsg: "Displaying tasks {0} - {1} of {2}",
     emptyMsg: "No tasks to display"
+});
+
+var category_queue_combo = new Ext.form.ComboBox({ 
+	hideLabel: true, 	 
+	width: 200,	 
+	store: category_store, 
+	valueField: "ID", 
+	displayField: "DESCRIPTION", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: "select category to apply / remove", 
+	selectOnFocus: true, 
+	editable: false
 });
 
 var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
@@ -146,24 +200,79 @@ var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
            	  	text: "Mark Completed",
            	  	icon: "<?= $this->baseUrl(); ?>/html/images/accept.png",
            	  	handler : function(){
-             	  	/*
-           	  		task_grid.postSelectedIDs({ 
+             	  	
+           	  		task_queue_grid.postSelectedIDs({ 
            	  			url: "<?= $this->baseUrl(); ?>/projects/markcomplete", 
            	  			postParam : "data[]", 
            	  			maskSave: true,
-           	  			reloadOnChange: true    						
+           	  			callback: function(){ filterTasks('',''); }    						
            	  		});
-         	  		*/
+         	  		
            	  	}
-           },
-		   '|',
-		   {
+           	},
+		   	'-',
+		   	{
+          		text: "Remove From Queue",
+              	icon: "<?= $this->baseUrl(); ?>/html/images/script_delete.png",
+              	handler : function(){
+
+              		task_queue_grid.postSelectedIDs({ 
+           	  			url: "<?= $this->baseUrl(); ?>/projects/remove-from-queue", 
+           	  			postParam : "data[]", 
+           	  			maskSave: true,
+           	  			callback: function(){ filterTasks('',''); }    						
+           	  		});
+               		
+              	}
+          	},
+			'-',
+          	{
            		text: "Delete",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/application_delete.png",
                	handler : function(){
+
+               		Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete these tasks?", function(btn){ 
+                    	if ( btn == "yes"){
+		               		task_queue_grid.postSelectedIDs({ 
+		           	  			url: "<?= $this->baseUrl(); ?>/projects/deletetasks", 
+		           	  			postParam : "data[]", 
+		           	  			maskSave: true,
+		           	  			callback: function(){ filterTasks('',''); }    						
+		           	  		});
+                    	}
+               		});
                 	
                	}
-           }                                       
+          	},
+          	'-',
+          	category_queue_combo,
+          	{
+           		text: "Apply",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
+               	handler : function(){
+
+               		if( category_queue_combo.getValue() != '' ){
+               			applyCategory(category_queue_combo.getValue(),task_queue_grid);
+               			category_queue_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to apply.");
+               		}
+                	
+               	}
+          	},{
+           		text: "Remove",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
+               	handler : function(){
+
+               		if( category_queue_combo.getValue() != '' ){
+               			removeCategory(category_queue_combo.getValue(),task_queue_grid);
+               			category_queue_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to remove.");
+               		}
+                	
+               	}
+          	}                                       
        	],
 	bbar: task_queue_pagingbar 	    
 
@@ -171,19 +280,31 @@ var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
 
 var task_pending_sm = new Ext.grid.CheckboxSelectionModel();
 
+function queuedRenderer(value){
+	if( value != '' && value != null){
+		return 'yes';
+	}
+}
+
 var task_pending_cm = new Ext.grid.ColumnModel([
 	task_pending_sm,
-	{ id: "id", header: "ID", dataIndex: "ID", hidden: true },	
-	{ header: "Priority", dataIndex: "PRIORITY", width: 60 },
-	{ header: "Due Date", dataIndex: "DUE_DATE", width: 100, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
-	{ header: "Project", dataIndex: "PROJECT", width: 250 },
-	{ id: "pending_description", header: "Description", dataIndex: "DESCRIPTION", width: 200 }                                                 
+	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: true },
+	{ header: "Queued", dataIndex: "QUEUE_ORDER", width: 50, renderer: queuedRenderer, sortable: false },
+	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: true },
+	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: true },
+	{ id: "pending_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: true }                                                 
 ]);
                                                                      	
 var task_pending_store = new Ext.data.Store({ 
 	url: "<?= $this->baseUrl(); ?>/projects/usertasks/status/pending",
 	baseParams: task_filter, 
 	remoteSort: true,
+	sortInfo: {
+		field: 'PRIORITY',
+		direction: 'ASC'
+	},
 	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Task), 
 	autoLoad: false 
 });		
@@ -194,6 +315,20 @@ var task_pending_pagingbar = new Ext.PagingToolbar({
 	displayInfo: true,
 	displayMsg: "Displaying tasks {0} - {1} of {2}",
 	emptyMsg: "No tasks to display"
+});
+
+var category_pending_combo = new Ext.form.ComboBox({	
+	hideLabel: true, 	 
+	width: 200,	 
+	store: category_store, 
+	valueField: "ID", 
+	displayField: "DESCRIPTION", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: "select category to apply / remove", 
+	selectOnFocus: true, 
+	editable: false
 });
 
 var task_pending_grid = new Ext.ux.EasyEditorGridPanel({
@@ -210,32 +345,79 @@ var task_pending_grid = new Ext.ux.EasyEditorGridPanel({
           	  	text: "Mark Completed",
           	  	icon: "<?= $this->baseUrl(); ?>/html/images/accept.png",
           	  	handler : function(){
-            	  	/*
-          	  		task_grid.postSelectedIDs({ 
+            	  	
+          	  		task_pending_grid.postSelectedIDs({ 
           	  			url: "<?= $this->baseUrl(); ?>/projects/markcomplete", 
           	  			postParam : "data[]", 
           	  			maskSave: true,
-          	  			reloadOnChange: true    						
+          	  			callback: function(){ filterTasks('',''); }    						
           	  		});
-        	  		*/
+        	  		
           	  	}
           	},
-		   	'|',
-		  	{
-          		text: "Delete",
-              	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
-              	handler : function(){
-               	
-              	}
-          	},
-          	'|',
+          	'-',
 		  	{
           		text: "Add To Queue",
-              	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
+              	icon: "<?= $this->baseUrl(); ?>/html/images/script_add.png",
               	handler : function(){
-               	
+
+              		task_pending_grid.postSelectedIDs({ 
+          	  			url: "<?= $this->baseUrl(); ?>/projects/add-to-queue", 
+          	  			postParam : "data[]", 
+          	  			maskSave: true,          	  			
+          	  			callback: function(){ filterTasks('',''); }    						
+          	  		});
+               		
               	}
-          	}                                       
+          	},
+		   	'-',
+		  	{
+          		text: "Delete",
+              	icon: "<?= $this->baseUrl(); ?>/html/images/application_delete.png",
+              	handler : function(){
+
+              		Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete these tasks?", function(btn){ 
+                    	if ( btn == "yes"){
+		               		task_pending_grid.postSelectedIDs({ 
+		           	  			url: "<?= $this->baseUrl(); ?>/projects/deletetasks", 
+		           	  			postParam : "data[]", 
+		           	  			maskSave: true,
+		           	  			callback: function(){ filterTasks('',''); }    						
+		           	  		});
+                    	}
+               		});
+               		
+              	}
+          	},
+          	'-',
+			category_pending_combo,          	
+          	{
+           		text: "Apply",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
+               	handler : function(){
+
+               		if( category_pending_combo.getValue() != '' ){
+               			applyCategory(category_pending_combo.getValue(),task_pending_grid);
+               			category_pending_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to apply.");
+               		}
+                	
+               	}
+          	},{
+           		text: "Remove",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
+               	handler : function(){
+
+               		if( category_pending_combo.getValue() != '' ){
+               			removeCategory(category_pending_combo.getValue(),task_pending_grid);
+               			category_pending_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to remove.");
+               		}
+                	
+               	}
+          	}          
       	],
 	bbar: task_pending_pagingbar 	    
 
@@ -245,17 +427,22 @@ var task_complete_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_complete_cm = new Ext.grid.ColumnModel([
 	task_complete_sm,
-	{ id: "id", header: "ID", dataIndex: "ID", hidden: true },	
-	{ header: "Priority", dataIndex: "PRIORITY", width: 60 },
-	{ header: "Completed", dataIndex: "COMPLETED", width: 100, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
-	{ header: "Project", dataIndex: "PROJECT", width: 250 },
+	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
+	{ header: "Completed", dataIndex: "COMPLETED", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
+	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200 },
 	{ id: "complete_description", header: "Description", dataIndex: "DESCRIPTION", width: 200 }                                                 
 ]);
                                                                                                                  	
 var task_complete_store = new Ext.data.Store({ 
 	url: "<?= $this->baseUrl(); ?>/projects/usertasks/status/complete",
 	baseParams: task_filter, 
-	remoteSort: true, 
+	remoteSort: true,
+	sortInfo: {
+		field: 'COMPLETED',
+		direction: 'DESC'
+	}, 
 	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Task), 
 	autoLoad: false 
 });		
@@ -266,6 +453,20 @@ var task_complete_pagingbar = new Ext.PagingToolbar({
 	displayInfo: true,
 	displayMsg: "Displaying tasks {0} - {1} of {2}",
 	emptyMsg: "No tasks to display"
+});
+
+var category_complete_combo = new Ext.form.ComboBox({ 
+	hideLabel: true, 	 
+	width: 200,	 
+	store: category_store, 
+	valueField: "ID", 
+	displayField: "DESCRIPTION", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: "select category to apply / remove", 
+	selectOnFocus: true, 
+	editable: false
 });
 
 var task_complete_grid = new Ext.ux.EasyEditorGridPanel({
@@ -282,24 +483,64 @@ var task_complete_grid = new Ext.ux.EasyEditorGridPanel({
          	  	text: "Mark Incompleted",
          	  	icon: "<?= $this->baseUrl(); ?>/html/images/accept.png",
          	  	handler : function(){
-           	  	/*
-         	  		task_grid.postSelectedIDs({ 
-         	  			url: "<?= $this->baseUrl(); ?>/projects/markcomplete", 
-         	  			postParam : "data[]", 
-         	  			maskSave: true,
-         	  			reloadOnChange: true    						
-         	  		});
-       	  		*/
+           	  	
+         	  		task_complete_grid.postSelectedIDs({ 
+          	  			url: "<?= $this->baseUrl(); ?>/projects/markincomplete", 
+          	  			postParam : "data[]", 
+          	  			maskSave: true,
+          	  			callback: function(){ filterTasks('',''); }    						
+          	  		});
+       	  		
          	  	}
          	},
-		   	'|',
+		   	'-',
 		  	{
          		text: "Delete",
-             	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
+             	icon: "<?= $this->baseUrl(); ?>/html/images/application_delete.png",
              	handler : function(){
-              	
+
+             		Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete these tasks?", function(btn){ 
+                    	if ( btn == "yes"){
+		               		task_complete_grid.postSelectedIDs({ 
+		           	  			url: "<?= $this->baseUrl(); ?>/projects/deletetasks", 
+		           	  			postParam : "data[]", 
+		           	  			maskSave: true,
+		           	  			callback: function(){ filterTasks('',''); }    						
+		           	  		});
+                    	}
+               		});
+              		
              	}
-         	}                                       
+         	},
+          	'-',
+          	category_complete_combo,
+          	{
+           		text: "Apply",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
+               	handler : function(){
+
+               		if( category_complete_combo.getValue() != '' ){
+               			applyCategory(category_complete_combo.getValue(),task_complete_grid);
+               			category_complete_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to apply.");
+               		}
+                	
+               	}
+          	},{
+           		text: "Remove",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
+               	handler : function(){
+
+               		if( category_complete_combo.getValue() != '' ){
+               			removeCategory(category_complete_combo.getValue(),task_complete_grid);
+               			category_complete_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to remove.");
+               		}
+                	
+               	}
+          	}                                       
      	],
 	bbar: task_complete_pagingbar 	    
 
@@ -309,10 +550,11 @@ var task_upcoming_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_upcoming_cm = new Ext.grid.ColumnModel([
 	task_upcoming_sm,
-	{ id: "id", header: "ID", dataIndex: "ID", hidden: true },	
-	{ header: "Priority", dataIndex: "PRIORITY", width: 60 },
-	{ header: "Display Date", dataIndex: "DISPLAY_DATE", width: 100, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
-	{ header: "Project", dataIndex: "PROJECT", width: 250 },
+	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
+	{ header: "Display Date", dataIndex: "DISPLAY_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
+	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200 },
 	{ id: "upcoming_description", header: "Description", dataIndex: "DESCRIPTION", width: 200 }                                                 
 ]);
                                                                                                                                                               	
@@ -320,6 +562,10 @@ var task_upcoming_store = new Ext.data.Store({
 	url: "<?= $this->baseUrl(); ?>/projects/usertasks/status/upcoming",
 	baseParams: task_filter, 
 	remoteSort: true, 
+	sortInfo: {
+		field: 'DISPLAY_DATE',
+		direction: 'ASC'
+	}, 
 	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Task), 
 	autoLoad: false 
 });		
@@ -330,6 +576,20 @@ var task_upcoming_pagingbar = new Ext.PagingToolbar({
 	displayInfo: true,
 	displayMsg: "Displaying tasks {0} - {1} of {2}",
 	emptyMsg: "No tasks to display"
+});
+
+var category_upcoming_combo = new Ext.form.ComboBox({ 
+	hideLabel: true, 	 
+	width: 200,	 
+	store: category_store, 
+	valueField: "ID", 
+	displayField: "DESCRIPTION", 
+	typeAhead: true, 
+	mode: "local", 
+	triggerAction: "all", 
+	emptyText: "select category to apply / remove", 
+	selectOnFocus: true, 
+	editable: false
 });
 
 var task_upcoming_grid = new Ext.ux.EasyEditorGridPanel({
@@ -344,20 +604,152 @@ var task_upcoming_grid = new Ext.ux.EasyEditorGridPanel({
 	tbar: [        	
 		  	{
         		text: "Delete",
-            	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
+            	icon: "<?= $this->baseUrl(); ?>/html/images/application_delete.png",
             	handler : function(){
-             	
+
+            		Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete these tasks?", function(btn){ 
+                    	if ( btn == "yes"){
+		               		task_upcoming_grid.postSelectedIDs({ 
+		           	  			url: "<?= $this->baseUrl(); ?>/projects/deletetasks", 
+		           	  			postParam : "data[]", 
+		           	  			maskSave: true,
+		           	  			callback: function(){ filterTasks('',''); }    						
+		           	  		});
+                    	}
+               		});
+             		
             	}
-        	}                                       
+        	},
+          	'-',
+          	category_upcoming_combo,
+          	{
+           		text: "Apply",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
+               	handler : function(){
+
+               		if( category_upcoming_combo.getValue() != '' ){
+               			applyCategory(category_upcoming_combo.getValue(),task_upcoming_grid);
+               			category_upcoming_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to apply.");
+               		}
+                	
+               	}
+          	},{
+           		text: "Remove",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
+               	handler : function(){
+
+               		if( category_upcoming_combo.getValue() != '' ){
+               			removeCategory(category_upcoming_combo.getValue(),task_upcoming_grid);
+               			category_upcoming_combo.setValue('');
+               		}else{
+               			Ext.Msg.alert("Error", "Please select a category to remove.");
+               		}
+                	
+               	}
+          	}                                       
     	],
 	bbar: task_upcoming_pagingbar 	    
 
 });
 
+var task_search_cm = new Ext.grid.ColumnModel([	
+	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
+	{ header: "Completed", dataIndex: "COMPLETED", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
+	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200 },
+	{ id: "search_description", header: "Description", dataIndex: "DESCRIPTION", width: 200 }                                                 
+]);
+                                                                                                                                                              	
+var task_search_store = new Ext.data.Store({ 
+	url: "<?= $this->baseUrl(); ?>/projects/usertasks/status/search",
+	baseParams: task_filter, 
+	remoteSort: true, 
+	sortInfo: {
+		field: 'COMPLETED',
+		direction: 'ASC'
+	}, 
+	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Task), 
+	autoLoad: false 
+});		
+
+var task_search_pagingbar = new Ext.PagingToolbar({
+	pageSize: 50,
+	store: task_search_store,
+	displayInfo: true,
+	displayMsg: "Displaying tasks {0} - {1} of {2}",
+	emptyMsg: "No tasks to display"
+});
+
+var task_search_keyword = new Ext.form.TextField({	
+	hideLabel: true, 	 
+	width: 300,	 	 
+	emptyText: "enter search keywords",
+	listeners: {
+        specialkey: function(field, e){
+            if (e.getKey() == e.ENTER) {
+            	searchTasks(task_search_keyword.getValue());	    
+            }            
+        }
+	}
+});
+
+var task_search_grid = new Ext.ux.EasyEditorGridPanel({
+                                                                                                                                                              		
+	title: 'Search',		
+	store: task_search_store,
+	cm: task_search_cm,    	
+	autoExpandColumn: "search_description",	   
+	stripeRows: true,
+	selModel: new Ext.grid.RowSelectionModel({ singleSelect:true }),
+	loadMask: true,
+	tbar: [        	
+			task_search_keyword,
+		  	{
+           		text: "Search",
+               	icon: "<?= $this->baseUrl(); ?>/html/images/magnifier.png",
+               	handler : function(){					               		               		
+               		searchTasks(task_search_keyword.getValue());
+               	}
+          	}                                       
+    	],
+	bbar: task_search_pagingbar 	    
+
+});
+
+function searchTasks(keyword){
+	task_filter.keyword = task_search_keyword.getValue();               	    
+	task_search_store.load({ params: { start: 0, limit: 50 } });
+}
+
+function applyCategory(cat,grid){
+	
+	grid.postSelectedIDs({ 
+ 			url: "<?= $this->baseUrl(); ?>/projects/apply-category/id/" + cat, 
+ 			postParam : "data[]", 
+ 			maskSave: true,
+ 			callback: function(){ filterTasks('',''); }    						
+ 	});
+ 	
+}
+
+function removeCategory(cat,grid){
+	
+	grid.postSelectedIDs({ 
+ 			url: "<?= $this->baseUrl(); ?>/projects/remove-category/id/" + cat, 
+ 			postParam : "data[]", 
+ 			maskSave: true,
+ 			callback: function(){ filterTasks('',''); }    						
+ 	});
+ 	
+}
+
 var task_tabs = new Ext.TabPanel({
 	
 	activeTab:0,                                                	
-	deferredRender: false,
+	deferredRender: true,
 	region: 'center',
 	plain: true,
 	margins:'5 5 5 0',
@@ -366,7 +758,8 @@ var task_tabs = new Ext.TabPanel({
 				task_queue_grid,
 				task_pending_grid,
 				task_complete_grid,
-				task_upcoming_grid                                                              	                        
+				task_upcoming_grid,
+				task_search_grid                                                              	                        
 			]	
 		                                        
 });
@@ -385,10 +778,8 @@ var tab_panel = new Ext.TabPanel({
 	plain: true,
 	margins:'5',
 				                        
-	items:	[                                                
-	      		{
-		      		title: "<span style='font-size: 14px;'>Projects</span>",		      		
-	      		},{
+	items:	[   
+	     		{
 		      		title: "<span style='font-size: 14px;'>Tasks</span>",
 		      		layout: "border",
 		      		items: [
@@ -398,7 +789,7 @@ var tab_panel = new Ext.TabPanel({
 				    tbar: 	[
 						   		{ 
 						        	text: "New Task",		            
-						            icon: "<?= $this->baseUrl() ?>/html/images/application_edit.png",
+						            icon: "<?= $this->baseUrl() ?>/html/images/application_add.png",
 						            handler : function(){
 						   				newTasks();
 						            }
@@ -421,6 +812,8 @@ var tab_panel = new Ext.TabPanel({
 						      	}
 							]
 	      		},{
+		      		title: "<span style='font-size: 14px;'>Projects</span>",		      		
+	      		},{
 		      		title: "<span style='font-size: 14px;'>Notes</span>"
 	      		}	                                                                            	                        
 			]
@@ -428,23 +821,26 @@ var tab_panel = new Ext.TabPanel({
 });
 
 
-
-
-
 /**************************************
- * TASK DETAIL WINDOW
+ * PROJECT GRID
  *************************************/
-
 var project_store = new Ext.data.Store({ 
 	url: "<?= $this->baseUrl(); ?>/projects/userprojects", 
 	reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, ["ID","DESCRIPTION"] ), 
 	autoLoad: true 
 });
+ 
+
+/**************************************
+ * TASK DETAIL WINDOW
+ *************************************/
+
+
 
 var project_combo = new Ext.form.ComboBox({ 
 	fieldLabel: "Project", 
-	hiddenName: "PROJ_ID", 
-	width: 390,
+	hiddenName: "PROJECT_ID", 
+	width: 400,
 	allowBlank: true, 
 	store: project_store, 
 	valueField: "ID", 
@@ -527,7 +923,7 @@ var map = new Ext.KeyMap(document,
 var task_form = new Ext.form.FormPanel({
 	
 	id: "task_form",
-	labelWidth: 80,
+	labelWidth: 100,
 	baseCls: "x-plain",                      
     defaultType: "textfield",
 	buttonAlign: "right",
@@ -538,53 +934,35 @@ var task_form = new Ext.form.FormPanel({
 			xtype: "textarea",			
 			hideLabel: true, 
 			name: "DESCRIPTION", 
-			width: 550,
+			width: 575,
 			height: 100,
 			allowBlank: false
 		},
 		project_combo,
 		{ 
-			xtype: "panel",  
-			baseCls: "x-plain",                      
-	      	layout:"column",
-	      	items:[
-		              {   
-		                 columnWidth:.50, 
-		                 layout: "form",             
-						 baseCls: "x-plain",                                        
-		                 items: [		                 				                 			
-									priority_combo		
-		                 		]
-		              },{   
-		                 columnWidth:.50, 
-						 baseCls: "x-plain",                      
-		                 layout: "form",		                                                
-		                 items: [									
-									{ 
-										xtype: "datefield", 
-										fieldLabel: "Due Date", 
-										name: "DUE_DATE", 
-										width: 100,
-										allowBlank: true, 
-										format: "Y-m-d" 
-									}
-									/*
-									,
-									{ 
-										xtype: "checkbox",
-										<?php if( $this->gdata_enabled == false ){ ?> 
-											hidden: true,
-											hideLabel: true, 
-										<?php } ?> 
-										fieldLabel: "Display on Google Calendar", 
-										name: "DISP_ON_GCAL",
-										inputValue: "1"																				 
-									}
-									*/
-		                 		]
-		              }
-		      	  ]
-	    },{
+			xtype: "combo",
+			fieldLabel: "Apply Category",
+			hiddenName: "CATEGORY_ID", 	 
+			width: 400,	 
+			store: category_store, 
+			valueField: "ID", 
+			displayField: "DESCRIPTION", 
+			typeAhead: true, 
+			mode: "local", 
+			triggerAction: "all", 
+			emptyText: "", 
+			selectOnFocus: true, 
+			editable: false
+		},
+		priority_combo,
+		{ 
+			xtype: "datefield", 
+			fieldLabel: "Due Date", 
+			name: "DUE_DATE", 
+			width: 100,
+			allowBlank: true, 
+			format: "Y-m-d" 
+		},{
             xtype: 'fieldset',
             title: 'Recurrence',            
             autoHeight:true,
@@ -660,7 +1038,7 @@ var task_form = new Ext.form.FormPanel({
 		   					url: '<?= $this->baseUrl(); ?>/projects/deletetasks',
 							params: { data: task_form.getForm().findField("ID").getValue() },
 		   					success: function(){
-								reloadTasks();
+								filterTasks('','');
 								task_window.hide(); 
 							},
 		   					failure: function(){
@@ -727,6 +1105,41 @@ function saveTasks(){
 	
 }
 
+function loadTask(id){
+		
+	task_window.show();
+	task_form.getForm().reset();
+	task_form.getForm().load({                    
+		url:"<?= $this->baseUrl(); ?>/projects/load-task-detail",
+		params: { id : id },
+	    waitMsg:"Loading Task ...",                      
+	    failure: function(){
+	    	Ext.Msg.alert("Error", "The task could not be loaded."); 
+	    },                      
+	    success: function(frm,act){                         
+	                                  
+	    }                      
+	});
+	task_window.center();          	 		
+	
+}
+
+
+function moveInQueue(dir,id){
+
+	Ext.Ajax.request({
+		url: '<?= $this->baseUrl(); ?>/projects/move-task-in-queue',
+		params: { id: id, dir: dir },
+		success: function(){
+			task_queue_store.reload();			
+		},
+		failure: function(){
+			Ext.Msg.alert("Error", "The task could not be moved in the queue.");
+		}   					
+	});
+	
+}
+
 
 Ext.onReady(function() {
 
@@ -742,17 +1155,18 @@ Ext.onReady(function() {
              		new Ext.BoxComponent({ 
                      	region:'north',
                      	el: 'header',
-                     	height: 40
+                     	height: 30
                  	}),             		 
              		tab_panel,             		
              		new Ext.BoxComponent({ 
                      	region:'south',
                      	el: 'footer',
-                     	height: 40
+                     	height: 45
                  	})
              	]
              
    	});
+
 
    	task_filter_tree.getRootNode().expand(
    		true,
@@ -760,7 +1174,27 @@ Ext.onReady(function() {
    		function(){ 
    	   		filterTasks('',''); 
    		}   		
-   	);   			
+   	);
+
+
+   	/**************************************
+	 * LISTENERS
+	 *************************************/		   	   	      	
+	task_queue_grid.on("celldblclick", function(){		
+		loadTask(task_queue_grid.getSelectedRowId());
+	});   			
+
+	task_pending_grid.on("celldblclick", function(){		
+		loadTask(task_pending_grid.getSelectedRowId());
+	});
+
+	task_complete_grid.on("celldblclick", function(){		
+		loadTask(task_complete_grid.getSelectedRowId());
+	});
+
+	task_upcoming_grid.on("celldblclick", function(){		
+		loadTask(task_upcoming_grid.getSelectedRowId());
+	});
    	   	   	
 });
 	

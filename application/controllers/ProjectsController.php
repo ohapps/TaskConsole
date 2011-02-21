@@ -196,29 +196,7 @@ class ProjectsController extends Zend_Controller_Action
 		
     	try{
     		
-    		$user = Zend_Registry::get('user');
-    		
-    		$priority = Doctrine_Core::getTable('Console_Priority')->find($this->_getParam('PRIORITY_ID'));
-    		
-    		if( $priority == false ){
-    			throw new Exception('invalid priority id');
-    		}
-    		
-    		$project = Doctrine_Core::getTable('Console_Project')->find($this->_getParam('PROJ_ID'));
-    		
-    		if( $project == false ){
-    			throw new Exception('invalid project id');
-    		}
-    		
-    		/*
-    		if( $project->Category->isUserProjectCategory($user->getUserId()) == false ){    			
-    			throw new Exception('project category does not belong to current user');
-    		}
-    		*/
-    		
-    		if( $this->_getParam('RECUR_UNIT_TYPE') != '' && in_array( $this->_getParam('RECUR_UNIT_TYPE'), array('days','months','years') ) == false ){
-    			throw new Exception('invalid recur unit type');
-    		}
+    		$user = Zend_Registry::get('user');    		    		
     		
     		if( $this->_getParam('ID') != "" ){
     			
@@ -229,20 +207,45 @@ class ProjectsController extends Zend_Controller_Action
     			}
     			
     		}else{
-    			$task = new Console_Task();
+    			$task = new Console_Task();    			
     		}
-
+    		
+    		$task->USER_ID = $user->getUserId();
     		$task->DESCRIPTION = $this->_getParam('DESCRIPTION');
-    		$task->PRIORITY_ID = $priority->ID;
-    		$task->PROJ_ID = $project->ID;
+    		$task->PRIORITY_ID = $this->_getParam('PRIORITY_ID');    		
+    		$task->PROJECT_ID = $this->_getParam('PROJECT_ID');
     		$task->DUE_DATE = $this->_getParam('DUE_DATE');
     		$task->RECUR_UNIT_TYPE = $this->_getParam('RECUR_UNIT_TYPE');
     		$task->RECUR_UNITS = $this->_getParam('RECUR_UNITS');
-    		$task->DISP_ON_GCAL = $this->_getParam('DISP_ON_GCAL');
-    		$task->save();    		
+    		//$task->DISP_ON_GCAL = $this->_getParam('DISP_ON_GCAL');
     		
-	    	$this->_helper->json->sendJson( array( "success" => true ) );
+    		try{    			    				
+    			
+    			$task->save();
+    			
+    			if( $this->_getParam('CATEGORY_ID') != null ){
+
+	    			$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('CATEGORY_ID') );
+	
+					if( $category == false ){
+						throw new Exception('invalid category id');
+					}
+	
+					if( $category->isUserCategory($user->getUserId()) == false ){    			
+			    		throw new Exception('category does not belong to current user');
+			    	}
+    				
+			    	$task->applyCategory($category);
+			    	
+    			}
+    			
+    			$this->_helper->json->sendJson( array( "success" => true ) );
+    		}catch( Doctrine_Validator_Exception $e ){    		    		
+    			$this->_helper->json->sendJson( array( "success" => false, "errors" => $task->getErrorStack()->toArray() ) );	
+    		}	    		    		
+	    	
     	}catch( Exception $e ){
+    		$this->_helper->logger->log()->err( $e->getMessage() );    		    		
     		$this->_helper->json->sendJson( array( "success" => false ) );	
     	}
     	    	    	    	
@@ -271,7 +274,7 @@ class ProjectsController extends Zend_Controller_Action
 					throw new Exception('invalid task id');	
 				}
 				
-				if( $task->Project->Category->isUserProjectCategory($user->getUserId()) == false ){    			
+				if( $task->isUserTask($user->getUserId()) == false ){    			
 	    			throw new Exception('task does not belong to current user');
 	    		}
 				
@@ -281,6 +284,7 @@ class ProjectsController extends Zend_Controller_Action
 			
     		$this->_helper->json->sendJson( array( "success" => true ) );
     	}catch( Exception $e ){
+    		$this->_helper->logger->log()->err( $e->getMessage() );
     		$this->_helper->json->sendJson( array( "success" => false ) );    		
     	}						
 		
@@ -312,11 +316,11 @@ class ProjectsController extends Zend_Controller_Action
 						throw new Exception('invalid task id');
 					}
 
-					if( $task->Project->Category->isUserProjectCategory($user->getUserId()) == false ){    			
+					if( $task->isUserTask($user->getUserId()) == false ){    			
 		    			throw new Exception('task does not belong to current user');
 		    		}
 					
-					$task->markComplete($config['date_format']);
+					$task->markComplete($config['date']['dbFormat']);																					
 												
 				}									
 							
@@ -324,10 +328,278 @@ class ProjectsController extends Zend_Controller_Action
 			
 			$this->_helper->json->sendJson( array( "success" => true ) );	
 		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
+    		$this->_helper->json->sendJson( array( "success" => false ) );    		
+    	} 
+						
+	}
+	
+	
+	/**
+	* mark a task complete
+	*/	 
+	public function markincompleteAction(){				
+				
+		$user = Zend_Registry::get('user');
+		
+		try{
+			
+			if( $this->_hasParam('data') ){
+			    		
+	    		if(is_array($this->_getParam('data'))){ 
+		    		$ids = $this->_getParam('data');
+				}else{
+					$ids = array($this->_getParam('data'));		
+				}																				
+				
+				foreach( $ids as $id ){
+					
+					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+
+					if( $task == false ){
+						throw new Exception('invalid task id');
+					}
+
+					if( $task->isUserTask($user->getUserId()) == false ){    			
+		    			throw new Exception('task does not belong to current user');
+		    		}
+					
+					$task->markIncomplete();																					
+												
+				}									
+							
+			}
+			
+			$this->_helper->json->sendJson( array( "success" => true ) );	
+		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
+    		$this->_helper->json->sendJson( array( "success" => false ) );    		
+    	} 
+						
+	}
+	
+	
+	/***************************************
+	* MANAGE QUEUE
+	****************************************/
+	public function addToQueueAction(){
+		
+		$user = Zend_Registry::get('user');
+		
+		try{
+			
+			if( $this->_hasParam('data') ){
+			    		
+	    		if(is_array($this->_getParam('data'))){ 
+		    		$ids = $this->_getParam('data');
+				}else{
+					$ids = array($this->_getParam('data'));		
+				}																				
+				
+				foreach( $ids as $id ){
+					
+					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+
+					if( $task == false ){
+						throw new Exception('invalid task id');
+					}
+
+					if( $task->isUserTask($user->getUserId()) == false ){    			
+		    			throw new Exception('task does not belong to current user');
+		    		}
+					
+					$task->addToQueue();																					
+												
+				}									
+							
+			}
+			
+			$this->_helper->json->sendJson( array( "success" => true ) );	
+		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
     		$this->_helper->json->sendJson( array( "success" => false ) );    		
     	} 
 		
+	}
+	
+	
+	public function removeFromQueueAction(){
+		
+		$user = Zend_Registry::get('user');
+		
+		try{
+			
+			if( $this->_hasParam('data') ){
+			    		
+	    		if(is_array($this->_getParam('data'))){ 
+		    		$ids = $this->_getParam('data');
+				}else{
+					$ids = array($this->_getParam('data'));		
+				}																				
 				
+				foreach( $ids as $id ){
+					
+					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+
+					if( $task == false ){
+						throw new Exception('invalid task id');
+					}
+
+					if( $task->isUserTask($user->getUserId()) == false ){    			
+		    			throw new Exception('task does not belong to current user');
+		    		}
+					
+					$task->removeFromQueue();																					
+												
+				}									
+							
+			}
+			
+			$this->_helper->json->sendJson( array( "success" => true ) );	
+		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
+    		$this->_helper->json->sendJson( array( "success" => false ) );    		
+    	} 
+		
+	}
+	
+	
+	public function moveTaskInQueueAction(){
+		
+		$user = Zend_Registry::get('user');
+		
+		try{
+			
+			if( $this->_hasParam('id') ){
+			    			    							
+				$task = Doctrine_Core::getTable('Console_Task')->find($this->_getParam('id'));
+
+				if( $task == false ){
+					throw new Exception('invalid task id');
+				}
+
+				if( $task->isUserTask($user->getUserId()) == false ){    			
+		    		throw new Exception('task does not belong to current user');
+		    	}
+					
+				$task->moveInQueue($this->_getParam('dir'));																																														
+							
+			}
+			
+			$this->_helper->json->sendJson( array( "success" => true ) );	
+		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
+    		$this->_helper->json->sendJson( array( "success" => false ) );    		
+    	} 
+		
+	}
+	
+	
+	/**
+	* apply category to tasks
+	*/	 
+	public function applyCategoryAction(){				
+				
+		$user = Zend_Registry::get('user');
+		
+		try{
+			
+			if( $this->_hasParam('data') && $this->_hasParam('id') ){
+
+				$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('id') );
+
+				if( $category == false ){
+					throw new Exception('invalid category id');
+				}
+
+				if( $category->isUserCategory($user->getUserId()) == false ){    			
+		    		throw new Exception('category does not belong to current user');
+		    	}				
+				
+	    		if(is_array($this->_getParam('data'))){ 
+		    		$ids = $this->_getParam('data');
+				}else{
+					$ids = array($this->_getParam('data'));		
+				}																				
+				
+				foreach( $ids as $id ){
+					
+					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+
+					if( $task == false ){
+						throw new Exception('invalid task id');
+					}
+
+					if( $task->isUserTask($user->getUserId()) == false ){    			
+		    			throw new Exception('task does not belong to current user');
+		    		}
+					
+					$task->applyCategory($category);																					
+												
+				}									
+							
+			}
+			
+			$this->_helper->json->sendJson( array( "success" => true ) );	
+		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
+    		$this->_helper->json->sendJson( array( "success" => false ) );    		
+    	} 
+						
+	}
+	
+	
+	/**
+	* remove category to tasks
+	*/	 
+	public function removeCategoryAction(){				
+				
+		$user = Zend_Registry::get('user');
+		
+		try{
+			
+			if( $this->_hasParam('data') && $this->_hasParam('id') ){
+
+				$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('id') );
+
+				if( $category == false ){
+					throw new Exception('invalid category id');
+				}
+
+				if( $category->isUserCategory($user->getUserId()) == false ){    			
+		    		throw new Exception('category does not belong to current user');
+		    	}				
+				
+	    		if(is_array($this->_getParam('data'))){ 
+		    		$ids = $this->_getParam('data');
+				}else{
+					$ids = array($this->_getParam('data'));		
+				}																				
+				
+				foreach( $ids as $id ){
+					
+					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+
+					if( $task == false ){
+						throw new Exception('invalid task id');
+					}
+
+					if( $task->isUserTask($user->getUserId()) == false ){    			
+		    			throw new Exception('task does not belong to current user');
+		    		}
+					
+					$task->removeCategory($category);																					
+												
+				}									
+							
+			}
+			
+			$this->_helper->json->sendJson( array( "success" => true ) );	
+		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
+    		$this->_helper->json->sendJson( array( "success" => false ) );    		
+    	} 
+						
 	}
 	
 	
@@ -341,7 +613,7 @@ class ProjectsController extends Zend_Controller_Action
     public function usercatsAction(){    	
     	    	    	    	    
     	$user = Zend_Registry::get('user');   		   		
-   		$cats = Doctrine_Core::getTable('Console_ProjectCategory')->getByUserId($user->getUserId());		
+   		$cats = Doctrine_Core::getTable('Console_Category')->getByUserId($user->getUserId());		
    		    	
     	$this->_helper->json->sendJson( array( "data" => $cats->toArray() ) );
     	
@@ -423,7 +695,8 @@ class ProjectsController extends Zend_Controller_Action
 				"sort" => $this->_getParam('sort'),
 				"dir" => $this->_getParam('dir'),
 				"status" => $this->_getParam('status'),
-				"priorities" => explode(",",$this->_getParam('priorities'))
+				"priorities" => explode(",",$this->_getParam('priorities')),
+				"keyword" => $this->_getParam('keyword')			
 			),
 			$start,
 			$limit			
@@ -442,92 +715,16 @@ class ProjectsController extends Zend_Controller_Action
 				"PRIORITY" => $task->Priority->DESCRIPTION,
 				"DUE_DATE" => $task->DUE_DATE,				
 				"COMPLETED" => $task->COMPLETED,
-				"DISPLAY_DATE" => $task->DISPLAY_DATE
-				//"CATEGORY" => $task->Project->Category->DESCRIPTION
+				"DISPLAY_DATE" => $task->DISPLAY_DATE,
+				"QUEUE_ORDER" => $task->QUEUE_ORDER,
+				"CATEGORIES" => $task->categoryList()
 			);
 		
 		}
 		
 		$this->_helper->json->sendJson( array( "results" => $total, "data" => $data ) ); 				
     	    	    	    	    	    	   
-    }
-	
-	/**
-	* returns a json response of high priority tasks for the current user
-	*/	 
-	public function getUserHighPriorityTasksAction(){
-		
-		$data = array();
-    	$user = Zend_Registry::get('user');
-
-    	$options = array(
-			'category' 		=> '',
-			'project' 		=> '',
-			'complete' 		=> 0,
-			'disp_high'		=> 1,
-			'disp_normal' 	=> 0,
-			'disp_low' 		=> 0				
-		);    	
-    	
-		$tasks = Doctrine_Core::getTable('Console_Task')->getByUserId($user->getUserId(),$options);				
-		
-		foreach( $tasks as $task ){
-			$data[] = array(
-				"ID" => $task->ID,
-				"PROJ_ID" => $task->Project->ID,
-				"PROJECT" => $task->Project->DESCRIPTION,
-				"DESCRIPTION" => $task->DESCRIPTION,
-				"PRIORITY_ID" => $task->PRIORITY_ID,
-				"PRIORITY" => $task->Priority->DESCRIPTION,
-				"DUE_DATE" => $task->DUE_DATE,
-				"COMPLETE" => $task->isComplete(),
-				"COMPLETE_DATE" => $task->COMPLETE_DATE,
-				"CATEGORY" => $task->Project->Category->DESCRIPTION
-			);
-		}
-						
-		$this->_helper->json->sendJson( array("data" => $data ) );				
-		
-	}	
-	
-	/**
-	* returns a json response of near due tasks for the current user
-	*/	 
-	public function getUserNearDueTasksAction(){
-		
-		$data = array();
-    	$user = Zend_Registry::get('user');							
-
-    	$options = array(
-			'category' 		=> '',
-			'project' 		=> '',
-			'complete' 		=> 0,
-			'disp_high'		=> 1,
-			'disp_normal' 	=> 0,
-			'disp_low' 		=> 0,
-    		'days_til_due'	=> 3				
-		);
-    	
-		$tasks = Doctrine_Core::getTable('Console_Task')->getByUserId($user->getUserId(),$options);				
-		
-		foreach( $tasks as $task ){
-			$data[] = array(
-				"ID" => $task->ID,
-				"PROJ_ID" => $task->Project->ID,
-				"PROJECT" => $task->Project->DESCRIPTION,
-				"DESCRIPTION" => $task->DESCRIPTION,
-				"PRIORITY_ID" => $task->PRIORITY_ID,
-				"PRIORITY" => $task->Priority->DESCRIPTION,
-				"DUE_DATE" => $task->DUE_DATE,
-				"COMPLETE" => $task->isComplete(),
-				"COMPLETE_DATE" => $task->COMPLETE_DATE,
-				"CATEGORY" => $task->Project->Category->DESCRIPTION
-			);
-		}
-    	
-		$this->_helper->json->sendJson( array("data" => $data ) );				
-		
-	}	
+    }		
 	
 	/**
 	* returns a json response of a single task
@@ -549,21 +746,17 @@ class ProjectsController extends Zend_Controller_Action
 				throw new Exception('invalid task id');
 			}
 			
-			if( $task->Project->Category->isUserProjectCategory($user->getUserId()) == false ){
+			if( $task->isUserTask($user->getUserId()) == false ){
 				throw new Exception('tasks does not belong to current user');
 			}
 			
 			$data = array(
 				"ID" => $task->ID,
-				"PROJ_ID" => $task->Project->ID,
-				"PROJECT" => $task->Project->DESCRIPTION,
+				"PROJECT_ID" => $task->PROJECT_ID,				
 				"DESCRIPTION" => $task->DESCRIPTION,
-				"PRIORITY_ID" => $task->PRIORITY_ID,
-				"PRIORITY" => $task->Priority->DESCRIPTION,
-				"DUE_DATE" => $this->_helper->date->format($task->DUE_DATE,$config['date_format']),
-				"COMPLETE" => $task->isComplete(),
-				"COMPLETE_DATE" => $this->_helper->date->format($task->COMPLETE_DATE,$config['date_format']),
-				"CATEGORY" => $task->Project->Category->DESCRIPTION,
+				"PRIORITY_ID" => $task->PRIORITY_ID,				
+				"DUE_DATE" => $this->_helper->date->format($task->DUE_DATE,$config['date']['appFormat']),				
+				"COMPLETED" => $this->_helper->date->format($task->COMPLETED,$config['date']['appFormat']),				
 				"RECUR_UNIT_TYPE" => $task->RECUR_UNIT_TYPE,
 				"RECUR_UNITS" => $task->RECUR_UNITS
 			);

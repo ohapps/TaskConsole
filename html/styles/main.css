@@ -15,16 +15,14 @@ a{
 	text-decoration: none;	
 }
 
-#header{ 	
-	background: #000;
-	color: #FFFFFF;
-	padding: 5px; 	
+#header{ 		
+	color: #444444;
+	padding: 5px 10px; 	
 }
 
 #footer{
-	text-align: right;
-	margin-top: 5px;
-	padding: 0px 5px;	
+	text-align: right;	
+	padding: 5px 10px;	
 }
 
 #logo{
@@ -32,7 +30,7 @@ a{
 	clear: right;
 	width: 300px;
 	font-weight: bold;
-	font-size: 20px;		
+	font-size: 18px;		
 }
 
 #lnks{ 
@@ -43,7 +41,7 @@ a{
 }
 
 #lnks a{
-	color: yellow;	
+	color: blue;	
 }
 
 #link_list{

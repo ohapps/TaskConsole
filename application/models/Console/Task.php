@@ -24,9 +24,9 @@ class Console_Task extends Doctrine_Record {
     	$this->hasColumn('PROJECT_ID', 'integer', 11, array(
              'type' => 'integer',
              'length' => 11,
-             'unsigned' => 1,
+             //'unsigned' => 1,
              'primary' => false,
-             'notnull' => true,
+             'notnull' => false,
              'autoincrement' => false,
              ));	
 		$this->hasColumn('DESCRIPTION', 'string', null, array(
@@ -66,8 +66,7 @@ class Console_Task extends Doctrine_Record {
              ));
         $this->hasColumn('RECUR_UNITS', 'integer', 11, array(
              'type' => 'integer',
-             'length' => 11,
-             'unsigned' => 1,
+             'length' => 11,             
              'primary' => false,
              'notnull' => false,
              'autoincrement' => false,
@@ -125,14 +124,49 @@ class Console_Task extends Doctrine_Record {
     }
 	
     
+    public function preSave($event){
+    	
+    	if($this->PROJECT_ID == 0){
+    		$this->PROJECT_ID = null;
+    	}
+    	
+    }
+    
+    
+    protected function validate(){
+    	
+    	$errorStack = $this->getErrorStack();
+    	
+    	$priority = Doctrine_Core::getTable('Console_Priority')->find($this->PRIORITY_ID);
+    		
+    	if( $priority == false ){    	    	    		
+            $errorStack->add('PRIORITY_ID', 'invalid priority');
+    	}
+    	
+    	if( $this->PROJECT_ID != null ){
+    	
+	    	$project = Doctrine_Core::getTable('Console_Project')->find($this->PROJECT_ID);
+	    		
+	    	if( $project == false ){
+	    		$errorStack->add('PROJECT_ID', 'invalid project');	    	
+	    	}
+    	
+    	}
+    	
+    	if( $this->RECUR_UNIT_TYPE != '' && in_array( $this->RECUR_UNIT_TYPE, array('days','months','years') ) == false ){
+    		$errorStack->add('RECUR_UNIT_TYPE', 'invalid recurring unit type');
+    	}
+    	
+    }
+    
+    
     public function markComplete($format){
     	
-    	if( $this->COMPLETE == 0 ){
+    	if( $this->COMPLETED == null || $this->COMPLETED == '' ){
     		
     		$today = new Zend_Date();
-    		
-	    	$this->COMPLETE = 1;
-	    	$this->COMPLETE_DATE = $today->toString($format);
+    			    	
+	    	$this->COMPLETED = $today->toString($format);	    	
 	    	$this->save();
 
 	    	// CHECK IF A RECURRING TASK IS REQUIRED	    	
@@ -160,10 +194,11 @@ class Console_Task extends Doctrine_Record {
 											
 					// CREATE RECURRING TASK
 					$task = new Console_Task();
-					$task->PROJ_ID = $this->PROJ_ID;
+					$task->USER_ID = $this->USER_ID;
+					$task->PROJECT_ID = $this->PROJECT_ID;
 					$task->DESCRIPTION = $this->DESCRIPTION;
 					$task->PRIORITY_ID = $this->PRIORITY_ID;
-					$task->COMPLETE = 0;
+					$task->COMPLETED = null;
 					$task->RECUR_UNIT_TYPE = $this->RECUR_UNIT_TYPE;
 					$task->RECUR_UNITS = $this->RECUR_UNITS;
 					$task->ORIG_ID = $this->ID;
@@ -176,11 +211,27 @@ class Console_Task extends Doctrine_Record {
 	    	
     	}
     	 
-    }
-        
+    }               
+
     
-    public function isComplete(){
-    	return strtr($this->COMPLETE,array( "1"=>"yes", "0"=>"no" ));
+    public function markIncomplete(){
+    	
+    	$this->COMPLETED = null;	    	
+	    $this->save();
+	    
+	    $this->deleteRecurringTasks();
+    	
+    }
+    
+    
+    public function isComplete(){    	
+    	
+    	if( $this->COMPLETED == null ){
+    		return "no";
+    	}else{
+    		return "yes";
+    	}
+    	
     }
     
     
@@ -197,6 +248,151 @@ class Console_Task extends Doctrine_Record {
     
     public function postDelete($event){    	
     	$this->deleteRecurringTasks();   	
+    }
+    
+    
+    public function isUserTask($userId){
+    	if($userId == $this->USER_ID){
+    		return true;
+    	}
+    	return false;
+    }
+    
+    
+	public function addToQueue(){
+
+		$max = 0;
+		
+   		$tasks = Doctrine_Core::getTable('Console_Task')->getTasksInQueue($this->USER_ID);
+
+   		foreach( $tasks as $task ){
+   			   			
+   			if( $task->ID == $this->ID ){
+   				return false;
+   			}
+   			
+   			if( $task->QUEUE_ORDER > $max ){
+   				$max = $task->QUEUE_ORDER;
+   			}
+   			
+   		}
+   		
+   		$this->QUEUE_ORDER = ( $max + 1 );
+   		$this->save();
+   		
+   		return true;
+    	
+    }
+    
+    
+    public function removeFromQueue(){
+    	
+    	$this->QUEUE_ORDER = null;
+    	$this->save();
+    	
+    	return true;
+    	
+    }
+    
+    
+    public function moveInQueue($dir){
+    	
+    	if( $dir != 'up' && $dir != 'down' ){
+    		throw new Exception('invalid direction when moving task in queue');    		    	
+    	}
+    	
+    	$tasks = Doctrine_Core::getTable('Console_Task')->getTasksInQueue($this->USER_ID);
+    	
+    	$swapTask = null;
+    	
+    	foreach( $tasks as $task ){
+   			   			
+   			if( $dir == 'up' ){
+   				
+   				if( $task->QUEUE_ORDER < $this->QUEUE_ORDER ){
+   					if( $swapTask == null ){
+   						$swapTask = $task;
+   					}else if( $task->QUEUE_ORDER > $swapTask->QUEUE_ORDER ){
+   						$swapTask = $task;
+   					}
+   				}
+   			
+   			}else{
+
+   				if( $task->QUEUE_ORDER > $this->QUEUE_ORDER ){
+   					if( $swapTask == null ){
+   						$swapTask = $task;
+   					}else if( $task->QUEUE_ORDER < $swapTask->QUEUE_ORDER ){
+   						$swapTask = $task;
+   					}
+   				}
+   				
+   			}   			
+   				
+   		}
+   		
+   		if( $swapTask != null ){
+   			
+   			$newOrder = $swapTask->QUEUE_ORDER;
+   			$swapTask->QUEUE_ORDER = $this->QUEUE_ORDER;
+   			$this->QUEUE_ORDER = $newOrder;
+   			$swapTask->save();
+   			$this->save();
+   			
+   		}
+    	
+    }
+    
+    
+    public function categoryList(){
+
+    	$cats = array();
+    	
+    	foreach( $this->Categories as $category ){
+    		$cats[] = $category->DESCRIPTION;
+    	}
+    	
+    	asort($cats);
+    	
+    	return implode(', ',$cats);
+    	
+    }
+    
+    
+    public function hasCategory(Console_Category $category){
+    	
+    	foreach( $this->Categories as $cat ){
+    		if( $category->ID == $cat->ID ){
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    	
+    }
+    
+    
+    public function applyCategory(Console_Category $category){
+    	    	    	
+    	if( $this->hasCategory($category) === false ){
+    		
+    		$this->link('Categories', array($category->ID));
+    		$this->save();
+    		
+    	}
+    	
+    }
+    
+    
+	public function removeCategory(Console_Category $category){
+    	    	    	
+    	if( $this->hasCategory($category) === true ){
+    		
+    		$this->unlink('Categories', array($category->ID));
+    		$this->save();
+    		
+    	}
+    	
     }
     
     
