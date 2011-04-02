@@ -33,11 +33,16 @@ class Console_TaskCategory extends Doctrine_Record {
 
 	
 	public function setUp(){
-    	$this->hasMany('Console_Project as Projects', array(
-                'local' => 'ID',
-                'foreign' => 'CATEGORY'
+		$this->hasOne('Console_Category as Category', array(
+                'local' => 'CATEGORY_ID',
+                'foreign' => 'ID'
             )
-        );	
+        );
+        $this->hasOne('Console_Task as Task', array(
+                'local' => 'TASK_ID',
+                'foreign' => 'ID'
+            )
+        );    		
     }
 	     
     

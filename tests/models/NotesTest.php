@@ -19,9 +19,9 @@ class NotesTest extends AbstractTest {
 		$note = Doctrine_Core::getTable('Console_Note')->find(1);
 				
 		$today = new Zend_Date();
-		$note->markViewed($today->toString($config['date_format']));
+		$note->markViewed($today->toString($config['date']['dbFormat']));
 
-		$this->assertEquals( $today->toString($config['date_format']), $note->LAST_VIEWED );
+		$this->assertEquals( $today->toString($config['date']['dbFormat']), $note->LAST_VIEWED );
 		
 	}
 	

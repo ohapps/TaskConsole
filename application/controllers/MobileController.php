@@ -16,7 +16,13 @@ class MobileController extends Zend_Controller_Action {
 	
 	public function init(){
 		
-		$this->_helper->layout->setLayout('mobile');
+		$userManager = Zend_Registry::get('userManager');
+		
+		if( $userManager->loggedIn() === false ){
+			$this->_redirect("/user/login");		
+		}
+		
+		$this->_helper->layout->setLayout('mobile');			
 		
 	}
 	

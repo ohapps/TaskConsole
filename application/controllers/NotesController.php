@@ -18,9 +18,11 @@ class NotesController extends Zend_Controller_Action
 	
 	public function init(){
 
-		if( $this->_helper->mobile->isIphone() == true ){
-			$this->_forward('index','mobile');
-		}
+		$userManager = Zend_Registry::get('userManager');
+		
+		if( $userManager->loggedIn() === false ){
+			$this->_redirect("/user/login");		
+		}				
 		
 	}
 	
@@ -66,7 +68,7 @@ class NotesController extends Zend_Controller_Action
 		}
 		
 		$today = new Zend_Date();
-		$note->markViewed($today->toString($config['date_format']));
+		$note->markViewed($today->toString($config['date']['dbFormat']));
 		
 		$this->view->note = $note;		
 				
@@ -198,14 +200,15 @@ class NotesController extends Zend_Controller_Action
 	    			    			    		
 	    	}
 
-	    	$note->fromArray($data);	    	
-			$note->LAST_UPDATE = $today->toString($config['date_format']);			
-			$note->LAST_VIEWED = $today->toString($config['date_format']);
+	    	$note->fromArray($data);
+	    	$note->USER_ID = $user->getUserId();	    	
+			$note->LAST_UPDATE = $today->toString($config['date']['dbFormat']);			
+			$note->LAST_VIEWED = $today->toString($config['date']['dbFormat']);
 	    	$note->save();
 	    	
 	    	$this->_helper->json->sendJson( array( "success" => true, "id" => $note->ID ) );
     	}catch( Exception $e ){
-    		$this->_helper->json->sendJson( array( "success" => false ) );	
+    		$this->_helper->json->sendJson( array( "success" => false, "error" => $e->getMessage() ) );	
     	}    	    	   
 		
 	}	
@@ -272,15 +275,13 @@ class NotesController extends Zend_Controller_Action
 				);    			
     		}
     		
-    		if ( count($children) > 0 ){
-    			$tree[] = array( 
-    				"id" => "topic_" . $topic->ID, 
-    				"text" => $topic->DESCRIPTION, 
-    				"cls" => "folder", 
-    				"expanded" => $expand, 
-    				"children" => $children 
-    			);    	
-    		}
+    		$tree[] = array( 
+    			"id" => "topic_" . $topic->ID, 
+    			"text" => $topic->DESCRIPTION, 
+    			"cls" => "folder", 
+    			"expanded" => $expand, 
+    			"children" => $children 
+    		);    	    		
     		
     	}    	
     	    	    
@@ -336,34 +337,7 @@ class NotesController extends Zend_Controller_Action
 			$this->_helper->json->sendJson( array( "success" => false ) );
 		}
 		
-	}
-
-	
-	/**
-	* return json response of recently viewed notes
-	*/	 
-	public function recentlyViewedAction(){
-				    	
-		$user = Zend_Registry::get('user');
-		$config = $this->getInvokeArg('bootstrap')->getOption('app');
-		$data = array();
-
-		$notes = Doctrine_Core::getTable('Console_Note')->getRecentlyViewed( $user->getUserId(), $config['recent_note_days'] );				
-		
-		foreach( $notes as $note ){
-			$data[] = array(
-				"ID" => $note->ID,
-				"TOPIC_ID" => $note->Topic->ID,
-				"CONTENTS" => $note->CONTENTS,
-				"DESCRIPTION" => $note->DESCRIPTION,
-				"LAST_VIEWED" => $this->_helper->date->format( $note->LAST_VIEWED, $config['date_format'] ),
-				"TOPIC" => $note->Topic->DESCRIPTION
-			);
-		}
-		
-		$this->_helper->json->sendJson( array( "data" => $data, "days" => $config['recent_note_days'] ) );
-		
-	}
+	}	
 	
 	
 }

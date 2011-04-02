@@ -17,10 +17,12 @@ class ProjectsController extends Zend_Controller_Action
 	
 	
 	public function init(){
-
-		if( $this->_helper->mobile->isIphone() == true ){
-			$this->_forward('index','mobile');
-		}
+		
+		$userManager = Zend_Registry::get('userManager');
+		
+		if( $userManager->loggedIn() === false ){
+			$this->_redirect("/user/login");		
+		}		
 		
 	}
 	
@@ -61,19 +63,26 @@ class ProjectsController extends Zend_Controller_Action
     	try{
     		
     		if( $this->_getParam('ID') != "" ){
-    			$project_category = Doctrine_Core::getTable('Console_ProjectCategory')->find($this->_getParam('ID'));
-    			if( $project_category == false ){
-    				throw new Exception('invalid project category id');
+    			
+    			$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('ID'));
+    			
+    			if( $category == false ){
+    				throw new Exception('invalid category id');
     			}
+    			
+    			if( $category->isUserCategory($user->getUserId()) === false ){
+    				throw new Exception('category does not belong to current user');
+    			}
+    			
     		}else{
-    			$project_category = new Console_ProjectCategory();
+    			$category = new Console_Category();
     		}
     		
-    		$project_category->DESCRIPTION = $this->_getParam('DESCRIPTION');
-    		$project_category->USER_ID = $user->getUserId();
-			$project_category->save();
+    		$category->DESCRIPTION = $this->_getParam('DESCRIPTION');
+    		$category->USER_ID = $user->getUserId();
+			$category->save();
     		
-	    	$this->_helper->json->sendJson( array( "success" => true, "grid_id" => $this->_getParam('GRID_ID'), "id" => $project_category->ID ) );	    	
+	    	$this->_helper->json->sendJson( array( "success" => true, "grid_id" => $this->_getParam('GRID_ID'), "id" => $category->ID ) );	    	
     	}catch( Exception $e ){
     		$this->_helper->json->sendJson( array( "success" => false ) );
     	}
@@ -89,16 +98,16 @@ class ProjectsController extends Zend_Controller_Action
     	
     	try{
     		    			    		
-    		$project_category = Doctrine_Core::getTable('Console_ProjectCategory')->find($this->_getParam('ID'));
+    		$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('ID'));
     		
-    		if( $project_category == false ){
-    			throw new Exception('invalid project category id');
+    		if( $category == false ){
+    			throw new Exception('invalid category id');
     		}
     		
-    		if( $project_category->isUserProjectCategory($user->getUserId()) ){
-    			$project_category->delete();	
+    		if( $category->isUserCategory($user->getUserId()) ){
+    			$category->delete();	
     		}else{
-    			throw new Exception('project category does not belong to current user');
+    			throw new Exception('category does not belong to current user');
     		}
     		    		
     		$this->_helper->json->sendJson( array( "success" => true ) );    		
@@ -120,17 +129,7 @@ class ProjectsController extends Zend_Controller_Action
     	
     	try{
     		
-    		$user = Zend_Registry::get('user');
-    		
-    		$project_category = Doctrine_Core::getTable('Console_ProjectCategory')->find($this->_getParam('CATEGORY'));
-    		
-    		if( $project_category == false ){
-    			throw new Exception('invalid project category id');
-    		}
-    		
-    		if( $project_category->isUserProjectCategory($user->getUserId()) == false ){    			
-    			throw new Exception('project category does not belong to current user');
-    		}
+    		$user = Zend_Registry::get('user');    		    		
     		
     		if( $this->_getParam('ID') != "" ){
     			
@@ -139,20 +138,51 @@ class ProjectsController extends Zend_Controller_Action
 	    		if( $project == false ){
 	    			throw new Exception('invalid project id');
 	    		}
+	    		
+	    		if( $project->isUserProject($user->getUserId()) === false ){
+	    			throw new Exception('project does not belong to current user');
+	    		}
     			
     		}else{
     			$project = new Console_Project();
+    			$project->USER_ID = $user->getUserId();
     		}
     		
     		$project->DESCRIPTION = $this->_getParam('DESCRIPTION');
-    		$project->COMMENTS = $this->_getParam('COMMENTS');
-    		$project->CATEGORY = $project_category->ID;
-    		$project->COMPLETE = $this->_getParam('COMPLETE');
+    		$project->COMMENTS = $this->_getParam('COMMENTS');    		
+    		$project->AUTO_COMPLETE = $this->_getParam('AUTO_COMPLETE');
     		$project->save();
-	    		    		    	
-	    	$this->_helper->json->sendJson( array( "success" => true, "grid_id" => $this->_getParam('GRID_ID'), "id" => $project->ID ) );	    	
+    		
+    		if( $this->_getParam('STATUS') == 'complete' ){
+    			
+    			$config = $this->getInvokeArg('bootstrap')->getOption('app');    			
+    			$project->markComplete($config['date']['dbFormat']);
+    			
+    		}else if( $this->_getParam('STATUS') == 'active' && $project->isComplete() === true ){
+    			
+    			$project->markIncomplete();
+    			
+    		}
+
+    		if( $this->_getParam('CATEGORY_ID') != null ){
+
+	    			$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('CATEGORY_ID') );
+	
+					if( $category == false ){
+						throw new Exception('invalid category id');
+					}
+	
+					if( $category->isUserCategory($user->getUserId()) == false ){    			
+			    		throw new Exception('category does not belong to current user');
+			    	}
+    				
+			    	$project->applyCategory($category);
+			    	
+    		}
+    		
+	    	$this->_helper->json->sendJson( array( "success" => true, "id" => $project->ID ) );	    	
     	}catch( Exception $e ){
-    		$this->_helper->json->sendJson( array( "success" => false ) );	
+    		$this->_helper->json->sendJson( array( "success" => false, "error" => $e->getMessage()) );	
     	}
     	    	    	    	    
 	}		
@@ -160,19 +190,19 @@ class ProjectsController extends Zend_Controller_Action
 	/**
 	* delete a project
 	*/	 
-	public function deleteprojectAction(){		
+	public function deleteProjectAction(){		
     	    	
     	$user = Zend_Registry::get('user');    	
     	
     	try{    		    		
     		
-    		$project = Doctrine_Core::getTable('Console_Project')->find($this->_getParam('ID'));
+    		$project = Doctrine_Core::getTable('Console_Project')->find($this->_getParam('id'));
     		
     		if( $project == false ){
     			throw new Exception('invalid project id');
     		}
     		
-    		if( $project->Category->isUserProjectCategory($user->getUserId()) ){
+    		if( $project->isUserProject($user->getUserId()) === true ){
     			$project->delete();
     		}else{
     			throw new Exception('project does not belong to current user');
@@ -185,6 +215,48 @@ class ProjectsController extends Zend_Controller_Action
 		
 	}
 	
+	
+	/**
+	* returns a json response of a single task
+	*/	 
+	public function loadProjectAction(){
+				
+		$user = Zend_Registry::get('user');
+		$config = $this->getInvokeArg('bootstrap')->getOption('app');						
+		
+		try{
+		
+			if( $this->_hasParam('id') == false ){
+				throw new Exception('missing id parameter');												
+			}
+			
+			$project = Doctrine_Core::getTable('Console_Project')->find( $this->_getParam('id') );
+			
+			if( $project == false ){
+				throw new Exception('invalid project id');
+			}
+			
+			if( $project->isUserProject($user->getUserId()) == false ){
+				throw new Exception('project does not belong to current user');
+			}
+			
+			$data = array(
+				"ID" => $project->ID,							
+				"DESCRIPTION" => $project->DESCRIPTION,
+				"COMMENTS" => $project->COMMENTS,												
+				"STATUS" => $project->getStatus(),				
+				"AUTO_COMPLETE" => $project->AUTO_COMPLETE
+			);
+			
+			$this->_helper->json->sendJson( array( "success" => "true", "data" => $data ) );
+		
+		}catch(Exception $e){
+			$this->_helper->json->sendJson( array( "success" => false ) );
+		}
+		
+	}
+	
+	
 	/***************************************
 	* MANAGE TASKS
 	****************************************/	
@@ -192,307 +264,10 @@ class ProjectsController extends Zend_Controller_Action
 	/**
 	* create or update a task
 	*/	 
-	public function savetaskAction(){		    	    				
-		
-    	try{
-    		
-    		$user = Zend_Registry::get('user');    		    		
-    		
-    		if( $this->_getParam('ID') != "" ){
-    			
-    			$task = Doctrine_Core::getTable('Console_Task')->find($this->_getParam('ID'));
-    			
-    			if( $task == false ){
-    				throw new Exception('invalid task id');
-    			}
-    			
-    		}else{
-    			$task = new Console_Task();    			
-    		}
-    		
-    		$task->USER_ID = $user->getUserId();
-    		$task->DESCRIPTION = $this->_getParam('DESCRIPTION');
-    		$task->PRIORITY_ID = $this->_getParam('PRIORITY_ID');    		
-    		$task->PROJECT_ID = $this->_getParam('PROJECT_ID');
-    		$task->DUE_DATE = $this->_getParam('DUE_DATE');
-    		$task->RECUR_UNIT_TYPE = $this->_getParam('RECUR_UNIT_TYPE');
-    		$task->RECUR_UNITS = $this->_getParam('RECUR_UNITS');
-    		//$task->DISP_ON_GCAL = $this->_getParam('DISP_ON_GCAL');
-    		
-    		try{    			    				
-    			
-    			$task->save();
-    			
-    			if( $this->_getParam('CATEGORY_ID') != null ){
-
-	    			$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('CATEGORY_ID') );
-	
-					if( $category == false ){
-						throw new Exception('invalid category id');
-					}
-	
-					if( $category->isUserCategory($user->getUserId()) == false ){    			
-			    		throw new Exception('category does not belong to current user');
-			    	}
-    				
-			    	$task->applyCategory($category);
-			    	
-    			}
-    			
-    			$this->_helper->json->sendJson( array( "success" => true ) );
-    		}catch( Doctrine_Validator_Exception $e ){    		    		
-    			$this->_helper->json->sendJson( array( "success" => false, "errors" => $task->getErrorStack()->toArray() ) );	
-    		}	    		    		
-	    	
-    	}catch( Exception $e ){
-    		$this->_helper->logger->log()->err( $e->getMessage() );    		    		
-    		$this->_helper->json->sendJson( array( "success" => false ) );	
-    	}
-    	    	    	    	
-	}	
-
-	/**
-	* delete a task
-	*/	 
-	public function deletetasksAction(){		    	
-				    	
-    	try{
-
-    		$user = Zend_Registry::get('user');
-    		
-    		if(is_array($this->_getParam('data'))){ 
-	    		$ids = $this->_getParam('data');
-			}else{
-				$ids = array($this->_getParam('data'));		
-			}
-
-			foreach( $ids as $id ){
-				
-				$task = Doctrine_Core::getTable('Console_Task')->find($id);
-				
-				if( $task == false ){
-					throw new Exception('invalid task id');	
-				}
-				
-				if( $task->isUserTask($user->getUserId()) == false ){    			
-	    			throw new Exception('task does not belong to current user');
-	    		}
-				
-				$task->delete();
-				
-			}
-			
-    		$this->_helper->json->sendJson( array( "success" => true ) );
-    	}catch( Exception $e ){
-    		$this->_helper->logger->log()->err( $e->getMessage() );
-    		$this->_helper->json->sendJson( array( "success" => false ) );    		
-    	}						
-		
-	}			
-	
-	/**
-	* mark a task complete
-	*/	 
-	public function markcompleteAction(){				
-		
-		$config = $this->getInvokeArg('bootstrap')->getOption('app');
-		$user = Zend_Registry::get('user');
-		
-		try{
-			
-			if( $this->_hasParam('data') ){
-			    		
-	    		if(is_array($this->_getParam('data'))){ 
-		    		$ids = $this->_getParam('data');
-				}else{
-					$ids = array($this->_getParam('data'));		
-				}																				
-				
-				foreach( $ids as $id ){
-					
-					$task = Doctrine_Core::getTable('Console_Task')->find($id);
-
-					if( $task == false ){
-						throw new Exception('invalid task id');
-					}
-
-					if( $task->isUserTask($user->getUserId()) == false ){    			
-		    			throw new Exception('task does not belong to current user');
-		    		}
-					
-					$task->markComplete($config['date']['dbFormat']);																					
-												
-				}									
-							
-			}
-			
-			$this->_helper->json->sendJson( array( "success" => true ) );	
-		}catch( Exception $e ){
-			$this->_helper->logger->log()->err( $e->getMessage() );			    				
-    		$this->_helper->json->sendJson( array( "success" => false ) );    		
-    	} 
-						
-	}
 	
 	
-	/**
-	* mark a task complete
-	*/	 
-	public function markincompleteAction(){				
-				
-		$user = Zend_Registry::get('user');
-		
-		try{
-			
-			if( $this->_hasParam('data') ){
-			    		
-	    		if(is_array($this->_getParam('data'))){ 
-		    		$ids = $this->_getParam('data');
-				}else{
-					$ids = array($this->_getParam('data'));		
-				}																				
-				
-				foreach( $ids as $id ){
-					
-					$task = Doctrine_Core::getTable('Console_Task')->find($id);
-
-					if( $task == false ){
-						throw new Exception('invalid task id');
-					}
-
-					if( $task->isUserTask($user->getUserId()) == false ){    			
-		    			throw new Exception('task does not belong to current user');
-		    		}
-					
-					$task->markIncomplete();																					
-												
-				}									
-							
-			}
-			
-			$this->_helper->json->sendJson( array( "success" => true ) );	
-		}catch( Exception $e ){
-			$this->_helper->logger->log()->err( $e->getMessage() );			    				
-    		$this->_helper->json->sendJson( array( "success" => false ) );    		
-    	} 
-						
-	}
 	
 	
-	/***************************************
-	* MANAGE QUEUE
-	****************************************/
-	public function addToQueueAction(){
-		
-		$user = Zend_Registry::get('user');
-		
-		try{
-			
-			if( $this->_hasParam('data') ){
-			    		
-	    		if(is_array($this->_getParam('data'))){ 
-		    		$ids = $this->_getParam('data');
-				}else{
-					$ids = array($this->_getParam('data'));		
-				}																				
-				
-				foreach( $ids as $id ){
-					
-					$task = Doctrine_Core::getTable('Console_Task')->find($id);
-
-					if( $task == false ){
-						throw new Exception('invalid task id');
-					}
-
-					if( $task->isUserTask($user->getUserId()) == false ){    			
-		    			throw new Exception('task does not belong to current user');
-		    		}
-					
-					$task->addToQueue();																					
-												
-				}									
-							
-			}
-			
-			$this->_helper->json->sendJson( array( "success" => true ) );	
-		}catch( Exception $e ){
-			$this->_helper->logger->log()->err( $e->getMessage() );			    				
-    		$this->_helper->json->sendJson( array( "success" => false ) );    		
-    	} 
-		
-	}
-	
-	
-	public function removeFromQueueAction(){
-		
-		$user = Zend_Registry::get('user');
-		
-		try{
-			
-			if( $this->_hasParam('data') ){
-			    		
-	    		if(is_array($this->_getParam('data'))){ 
-		    		$ids = $this->_getParam('data');
-				}else{
-					$ids = array($this->_getParam('data'));		
-				}																				
-				
-				foreach( $ids as $id ){
-					
-					$task = Doctrine_Core::getTable('Console_Task')->find($id);
-
-					if( $task == false ){
-						throw new Exception('invalid task id');
-					}
-
-					if( $task->isUserTask($user->getUserId()) == false ){    			
-		    			throw new Exception('task does not belong to current user');
-		    		}
-					
-					$task->removeFromQueue();																					
-												
-				}									
-							
-			}
-			
-			$this->_helper->json->sendJson( array( "success" => true ) );	
-		}catch( Exception $e ){
-			$this->_helper->logger->log()->err( $e->getMessage() );			    				
-    		$this->_helper->json->sendJson( array( "success" => false ) );    		
-    	} 
-		
-	}
-	
-	
-	public function moveTaskInQueueAction(){
-		
-		$user = Zend_Registry::get('user');
-		
-		try{
-			
-			if( $this->_hasParam('id') ){
-			    			    							
-				$task = Doctrine_Core::getTable('Console_Task')->find($this->_getParam('id'));
-
-				if( $task == false ){
-					throw new Exception('invalid task id');
-				}
-
-				if( $task->isUserTask($user->getUserId()) == false ){    			
-		    		throw new Exception('task does not belong to current user');
-		    	}
-					
-				$task->moveInQueue($this->_getParam('dir'));																																														
-							
-			}
-			
-			$this->_helper->json->sendJson( array( "success" => true ) );	
-		}catch( Exception $e ){
-			$this->_helper->logger->log()->err( $e->getMessage() );			    				
-    		$this->_helper->json->sendJson( array( "success" => false ) );    		
-    	} 
-		
-	}
 	
 	
 	/**
@@ -524,17 +299,17 @@ class ProjectsController extends Zend_Controller_Action
 				
 				foreach( $ids as $id ){
 					
-					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+					$project = Doctrine_Core::getTable('Console_Project')->find($id);
 
-					if( $task == false ){
-						throw new Exception('invalid task id');
+					if( $project == false ){
+						throw new Exception('invalid project id');
 					}
 
-					if( $task->isUserTask($user->getUserId()) == false ){    			
-		    			throw new Exception('task does not belong to current user');
+					if( $project->isUserProject($user->getUserId()) == false ){    			
+		    			throw new Exception('project does not belong to current user');
 		    		}
 					
-					$task->applyCategory($category);																					
+					$project->applyCategory($category);																					
 												
 				}									
 							
@@ -578,17 +353,17 @@ class ProjectsController extends Zend_Controller_Action
 				
 				foreach( $ids as $id ){
 					
-					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+					$project = Doctrine_Core::getTable('Console_Project')->find($id);
 
-					if( $task == false ){
-						throw new Exception('invalid task id');
+					if( $project == false ){
+						throw new Exception('invalid project id');
 					}
 
-					if( $task->isUserTask($user->getUserId()) == false ){    			
-		    			throw new Exception('task does not belong to current user');
+					if( $project->isUserProject($user->getUserId()) == false ){    			
+		    			throw new Exception('project does not belong to current user');
 		    		}
 					
-					$task->removeCategory($category);																					
+					$project->removeCategory($category);																					
 												
 				}									
 							
@@ -634,7 +409,7 @@ class ProjectsController extends Zend_Controller_Action
 					"ID" => $project->ID,
 	   				"DESCRIPTION" => $project->DESCRIPTION,
 	   				"COMMENTS" => $project->COMMENTS,	   				
-	   				"COMPLETED" => $project->COMPLETED 			
+	   				"COMPLETED" => $project->COMPLETED			
 	   			);
     		}
    		}
@@ -646,128 +421,57 @@ class ProjectsController extends Zend_Controller_Action
 	/**
 	* returns json response with all projects for the current user
 	*/	 
-    public function userProjectsAllAction(){
+    public function userProjectsPagedAction(){
     	    	
     	$user = Zend_Registry::get('user');   		   		
-   		$data = array();   
+   		$data = array();      		
    		
-   		$projects = Doctrine_Core::getTable('Console_Project')->getByUserId($user->getUserId());
-   		
-   		foreach($projects as $project){
-   			$data[] = array(
-				"ID" => $project->ID,
-   				"DESCRIPTION" => $project->DESCRIPTION,
-   				"COMMENTS" => $project->COMMENTS,
-   				"CATEGORY" => $project->CATEGORY,
-   				"COMPLETE" => $project->COMPLETE,
-   				"CAT_DESC" => $project->fullDesc()   			
-   			);
-   		}
-   		
-    	$this->_helper->json->sendJson( array( "data" => $data ) );    	
-    	    	    
-    }
-    
-	/**
-	* returns json response with all tasks for the current user. the results can be filtered by project, priority and due date.
-	*/	     
-    public function usertasksAction(){    	    	
-    	    	    	    	    	    	    	
-    	$data = array();
-    	$user = Zend_Registry::get('user');
-    	
-    	if( $this->_hasParam('start') === false || $this->_hasParam('limit') === false ){
-    		throw new Exception('missing start or limit parameter when loading user tasks');
+   		if( $this->_hasParam('start') === false || $this->_hasParam('limit') === false ){
+    		throw new Exception('missing start or limit parameter when loading user projects');
     	}
     	
     	if( is_numeric( $this->_getParam('start') ) === false || is_numeric($this->_getParam('limit')) === false ){
-    		throw new Exception('start or limit parameter is not a numeric value when loading user tasks');
+    		throw new Exception('start or limit parameter is not a numeric value when loading user projects');
     	}
     	
 		$limit = $this->_getParam('limit');
         $start = ( ( $this->_getParam('start') / $limit ) + 1 );    			    			    	    	    	     	          	   				    	    	    
     	
-		$pager = Doctrine_Core::getTable('Console_Task')->getPagedResultsByUserId(
+		$pager = Doctrine_Core::getTable('Console_Project')->getPagedResultsByUserId(
 			$user->getUserId(),
-			array(
-				"category" => $this->_getParam('category'),
-				"project" => $this->_getParam('project'),
+			array(				
 				"sort" => $this->_getParam('sort'),
 				"dir" => $this->_getParam('dir'),
 				"status" => $this->_getParam('status'),
-				"priorities" => explode(",",$this->_getParam('priorities')),
-				"keyword" => $this->_getParam('keyword')			
+				"category" => $this->_getParam('category')
 			),
 			$start,
 			$limit			
 		);
 
-		$tasks = $pager->execute();
+		$projects = $pager->execute();
         $total = $pager->getNumResults();		
 		
-		foreach( $tasks as $task ){
-			$data[] = array(
-				"ID" => $task->ID,
-				"PROJECT_ID" => $task->PROJECT_ID,
-				"PROJECT" => ( $task->PROJECT_ID != null )? $task->Project->DESCRIPTION : "",
-				"DESCRIPTION" => $task->DESCRIPTION,
-				"PRIORITY_ID" => $task->PRIORITY_ID,
-				"PRIORITY" => $task->Priority->DESCRIPTION,
-				"DUE_DATE" => $task->DUE_DATE,				
-				"COMPLETED" => $task->COMPLETED,
-				"DISPLAY_DATE" => $task->DISPLAY_DATE,
-				"QUEUE_ORDER" => $task->QUEUE_ORDER,
-				"CATEGORIES" => $task->categoryList()
-			);
+    	foreach($projects as $project){
+   			$data[] = array(
+				"ID" => $project->ID,
+   				"DESCRIPTION" => $project->DESCRIPTION,
+   				"COMMENTS" => $project->COMMENTS,
+   				"COMPLETED" => $project->COMPLETED,
+   				"STATUS" => $project->getStatus(),
+   				"TASK_PENDING" => $project->getTaskPendingCount(),
+   				"TASK_COMPLETE" => $project->getTaskCompleteCount(),
+   				"TASK_TOTAL" => $project->getTaskTotal(),
+	   			"CATEGORIES" => $project->categoryList()  			
+   			);
+   		}
 		
-		}
-		
-		$this->_helper->json->sendJson( array( "results" => $total, "data" => $data ) ); 				
-    	    	    	    	    	    	   
-    }		
-	
-	/**
-	* returns a json response of a single task
-	*/	 
-	public function loadTaskDetailAction(){
-				
-		$user = Zend_Registry::get('user');
-		$config = $this->getInvokeArg('bootstrap')->getOption('app');						
-		
-		try{
-		
-			if( $this->_hasParam('id') == false ){
-				throw new Exception('missing id parameter');												
-			}
+		$this->_helper->json->sendJson( array( "results" => $total, "data" => $data ) );    		     	
+    	    	    
+    }
+    
 			
-			$task = Doctrine_Core::getTable('Console_Task')->find( $this->_getParam('id') );
-			
-			if( $task == false ){
-				throw new Exception('invalid task id');
-			}
-			
-			if( $task->isUserTask($user->getUserId()) == false ){
-				throw new Exception('tasks does not belong to current user');
-			}
-			
-			$data = array(
-				"ID" => $task->ID,
-				"PROJECT_ID" => $task->PROJECT_ID,				
-				"DESCRIPTION" => $task->DESCRIPTION,
-				"PRIORITY_ID" => $task->PRIORITY_ID,				
-				"DUE_DATE" => $this->_helper->date->format($task->DUE_DATE,$config['date']['appFormat']),				
-				"COMPLETED" => $this->_helper->date->format($task->COMPLETED,$config['date']['appFormat']),				
-				"RECUR_UNIT_TYPE" => $task->RECUR_UNIT_TYPE,
-				"RECUR_UNITS" => $task->RECUR_UNITS
-			);
-			
-			$this->_helper->json->sendJson( array( "success" => "true", "data" => $data ) );
 		
-		}catch(Exception $e){
-			$this->_helper->json->sendJson( array( "success" => false ) );
-		}
-		
-	}
 	
     /**
 	* returns a json response formatted for a list tree with the drill down of project categories and projects for the current user
@@ -845,7 +549,7 @@ class ProjectsController extends Zend_Controller_Action
     		    	
     	}
     	
-    	$projects = Doctrine_Core::getTable('Console_Project')->getByUserId($user->getUserId());    	    	    	    	    	    	
+    	$projects = Doctrine_Core::getTable('Console_Project')->getByUserId($user->getUserId(),'active');    	    	    	    	    	    	
     	
     	$children = array();
     	

@@ -59,13 +59,7 @@ class Console_Note extends Doctrine_Record {
 	}
 
 	
-	public function setUp(){
-		$this->hasMany('Console_Project as Projects', array(
-                'local' => 'NOTE_ID',
-                'foreign' => 'PROJECT_ID',
-                'refClass' => 'Console_ProjectNote'
-            )
-        );
+	public function setUp(){		
     	$this->hasOne('Console_Topic as Topic', array(
                 'local' => 'TOPIC_ID',
                 'foreign' => 'ID'

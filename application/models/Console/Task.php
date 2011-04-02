@@ -126,9 +126,11 @@ class Console_Task extends Doctrine_Record {
     
     public function preSave($event){
     	
+    	/*
     	if($this->PROJECT_ID == 0){
     		$this->PROJECT_ID = null;
     	}
+    	*/
     	
     }
     
@@ -206,6 +208,20 @@ class Console_Task extends Doctrine_Record {
 					$task->save();
 	    			
 	    		}	    		
+	    		
+	    	}
+	    	
+	    	if($this->PROJECT_ID != '' && $this->PROJECT_ID != null){
+	    		
+	    		if( $this->Project->AUTO_COMPLETE == 1 ){
+	    			
+	    			if( $this->Project->getTaskPendingCount() == 0 ){
+	    				
+	    				$this->Project->markComplete($format);
+	    				
+	    			}
+	    			
+	    		}
 	    		
 	    	}
 	    	

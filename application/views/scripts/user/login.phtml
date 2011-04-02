@@ -1,0 +1,97 @@
+<div style="text-align: center; margin-top: 100px;">
+	
+	<div style="margin-left: auto; margin-right: auto; width: 225px; text-align: left;">
+	
+		<div style="font-weight: bold; font-size: 18px; padding: 10px 0px;">
+			Task Console
+		</div>
+		
+		<div id="login_form"></div>
+		
+		<div style="padding: 10px 0px; text-align: center;">
+			<a href="/home"><img alt="OHAPPS Logo" src="<?= $this->baseUrl(); ?>/html/images/ohapps_logo_small2.png" border=0/></a>
+		</div>
+
+	</div>
+
+</div>
+
+<script type="text/javascript">
+
+Ext.onReady(function() { 
+
+	var invalid_label = new Ext.form.Label({
+		hidden: true,		
+		html: '<span style="color: red; font-weight: bold; font-size: 12px;">invalid login</span>'
+	});
+	
+	var login_form = new Ext.form.FormPanel({
+		
+		labelWidth: 175,
+		title: "Login",                      
+	    defaultType: "textfield",       
+	    bodyStyle: "padding:5px;",
+		labelAlign: "top",
+		frame: true,		   				
+		    
+	    items: [
+			invalid_label,
+	    	{ 
+				fieldLabel: "username", 
+				name: "un",
+				id: "un" ,
+				width: 200,
+				selectOnFocus: true,
+				allowBlank: false
+			},    	
+	    	{ 
+				fieldLabel: "password", 
+				name: "ps",
+				inputType: "password" ,
+				width: 200,
+				allowBlank: false
+			},				    	
+	    	{ 
+				xtype: "button", 
+				text: "login", 
+				handler: function(){ 
+					login();												 
+				} 
+			}
+	    ]
+	    	
+	});
+	
+	
+	function login(){
+		if ( login_form.getForm().isValid() ){                         	
+			login_form.getForm().submit({
+	            url:"<?= $this->baseUrl(); ?>/user/auth", 
+	            waitMsg:"checking username and password ...",
+	            success: function(){
+	            	Ext.MessageBox.show({ title: 'Login Successful', progressText: 'Redirecting ...', width:300, wait:true, waitConfig: {interval:200}, closable:false });
+	                document.location.href="<?= $this->success_url ?>";                
+	            },
+	            failure: function(){ 	            	
+	            	invalid_label.show();
+	            	login_form.getForm().findField("un").focus(); 
+	            }
+        	});
+        }else{
+        	login_form.getForm().findField("un").focus();
+        }	
+	}
+	
+	var map = new Ext.KeyMap(document, {
+  		key: Ext.EventObject.ENTER,
+  		fn: login,
+  		scope: this
+	});
+	
+	login_form.render("login_form");
+	
+	login_form.getForm().findField("un").focus();
+
+});
+
+</script>

@@ -8,17 +8,9 @@ class ProjectsTest extends AbstractTest {
 	public function testGetByUserId(){
 				
 		$cnt = count( Doctrine_Core::getTable('Console_Project')->getByUserId( $this->testUserId ) );
-		$this->assertEquals( 3, $cnt );								
+		$this->assertEquals( 2, $cnt );								
 		
-	}
-	
-	
-	public function testFullDesc(){
-		
-		$project = Doctrine_Core::getTable('Console_Project')->find(1);
-		$this->assertEquals( $project->fullDesc(), 'Work - Work Stuff' );
-		
-	}
+	}			
 
 	
 	public function testIsActive(){
@@ -26,7 +18,7 @@ class ProjectsTest extends AbstractTest {
 		$project = Doctrine_Core::getTable('Console_Project')->find(1);
 		$this->assertTrue( $project->isActive() );
 		
-		$project = Doctrine_Core::getTable('Console_Project')->find(3);
+		$project = Doctrine_Core::getTable('Console_Project')->find(2);
 		$this->assertFalse( $project->isActive() );
 		
 	}
