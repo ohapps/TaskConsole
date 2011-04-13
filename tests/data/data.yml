@@ -98,6 +98,7 @@ Console_Task:
   USER_ID: 1
   DESCRIPTION: Test Task
   PROJECT_ID: 2  
+  COMPLETED: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
   PRIORITY_ID: 3    
   RECUR_UNIT_TYPE: days
   RECUR_UNITS: 7
