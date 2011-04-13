@@ -39,9 +39,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 		$userManager = new Oh_UserManager();
 		$user = $userManager->getCurrentUser();
 		
+		/*
 		if( $user === false && $config['login_required'] == true ){					    			
 			$userManager->chk_auth( $config['login_url'] );					
 		}
+		*/
 		
 		Zend_Registry::set('userManager',$userManager);
 		Zend_Registry::set('user',$user);

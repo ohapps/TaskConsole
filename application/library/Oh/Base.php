@@ -18,17 +18,17 @@ class Oh_Base {
 				
 						'adapter' 		=> 		'Mysqli',
 						'host'			=>		'localhost',
-						'username'		=>		'oh_user',
-						'password'		=>		'Quc4RGC9CFNhLcgdL1qdO8wcp5P7622TjGTdNxnyG6I=',
-						'dbname'		=>		'ohapp'
+						'username'		=>		'tc_user',
+						'password'		=>		't3ch13',
+						'dbname'		=>		'taskconsole'
 				
 				),
 				
 				'session'	=> array(
 				
 						'namespace'		=>		'ohapps',
-						'login_url'		=>		'/home/user/login',
-						'logout_url'	=>		'/home/user/logout'						
+						'login_url'		=>		'/TaskConsole/user/login',
+						'logout_url'	=>		'/TaskConsole/user/logout'						
 				
 				)
 			
@@ -38,7 +38,7 @@ class Oh_Base {
 		$this->conn = Zend_Db::factory($this->config->database->adapter, array(
     				'host'     => $this->config->database->host,
     				'username' => $this->config->database->username,
-    				'password' => Oh_Crypt::decrypt( $this->config->database->password ),    				
+    				'password' => $this->config->database->password,    				
     				'dbname'   => $this->config->database->dbname
 		));			
 		
