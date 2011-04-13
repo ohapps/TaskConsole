@@ -20,7 +20,7 @@ class Oh_UserManager extends Oh_Base {
 		
 		try{ 
 		
-			$authAdapter = new Zend_Auth_Adapter_DbTable($this->conn, 'oha_user', 'username', 'password');
+			$authAdapter = new Zend_Auth_Adapter_DbTable($this->conn, 'users', 'username', 'password');
 			$authAdapter->setIdentity($user)->setCredential( md5( $pass ) );		
 			$result = $authAdapter->authenticate();
 			
@@ -39,7 +39,7 @@ class Oh_UserManager extends Oh_Base {
 	}
 					
 	
-	public function chk_auth( $success_url, $direct_url = true ){				
+	public function chk_auth( $success_url, $direct_url = false ){				
 		if ( $this->_session->authenticated == false ){
 			$this->_session->success_url = $success_url;
 			if ( $direct_url ){
@@ -118,7 +118,7 @@ class Oh_UserManager extends Oh_Base {
 	
 	public function getUserByUsername($username){
 		
-		$results = $this->conn->fetchAll( "SELECT * FROM oha_user where username = ?", $username );
+		$results = $this->conn->fetchAll( "SELECT * FROM users where username = ?", $username );
 		
 		if( count($results) == 1 ){
 			$ohUser = new Oh_User($this);
@@ -133,7 +133,7 @@ class Oh_UserManager extends Oh_Base {
 	
 	public function getUserById($id){
 		
-		$results = $this->conn->fetchAll( "SELECT * FROM oha_user where id = ?", $id );
+		$results = $this->conn->fetchAll( "SELECT * FROM users where id = ?", $id );
 		
 		if( count($results) == 1 ){
 			$ohUser = new Oh_User($this);
@@ -149,7 +149,7 @@ class Oh_UserManager extends Oh_Base {
 	public function saveUser(Oh_User $user){
 				
 		$this->conn->update(
-			'oha_user',
+			'users',
 			$user->toArray(),
 			'ID = ' . $user->getId()
 		);
@@ -159,7 +159,7 @@ class Oh_UserManager extends Oh_Base {
 	
 	public function checkUsername(Oh_User $user){
 		
-		if( count( $this->conn->fetchAll( 'select * from oha_user where USERNAME = ? and ID != ?', array( $user->getUsername(), $user->getId() ) ) ) > 0 ){
+		if( count( $this->conn->fetchAll( 'select * from users where USERNAME = ? and ID != ?', array( $user->getUsername(), $user->getId() ) ) ) > 0 ){
 			return false;
 		}else{
 			return true;
