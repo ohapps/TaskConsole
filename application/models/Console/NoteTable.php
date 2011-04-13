@@ -8,13 +8,12 @@ class Console_NoteTable extends Doctrine_Table{
 		$zd = new Zend_Date();	
     	$zd->sub( $days, Zend_Date::DAY );
 		
-		$query = $this->createQuery('n')
-        	->leftJoin( 'n.Topic t' )
-            ->where('t.USER_ID = ?', $user_id)
-            ->andWhere('n.LAST_VIEWED >= ?', $zd->toString('yyyy-MM-dd') )
-            ->orderBy('t.DESCRIPTION, n.DESCRIPTION');       
+		$query = $this->createQuery('n')        			  
+            		  ->where('n.USER_ID = ?', $user_id)
+            		  ->andWhere('n.LAST_VIEWED >= ?', $zd->toString('yyyy-MM-dd') )
+            		  ->orderBy('n.DESCRIPTION');       
             
-       return $query->execute();
+       	return $query->execute();
             
     }
 	

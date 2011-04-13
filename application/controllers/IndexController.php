@@ -14,10 +14,12 @@ class IndexController extends Zend_Controller_Action {
 
 	
 	public function init(){
-
-		if( $this->_helper->mobile->isIphone() == true ){
-			$this->_forward('index','mobile');
-		}
+				
+		$userManager = Zend_Registry::get('userManager');
+		
+		if( $userManager->loggedIn() === false ){
+			$this->_redirect("/user/login");		
+		}										
 		
 	}
 	
@@ -25,9 +27,8 @@ class IndexController extends Zend_Controller_Action {
 	/**
 	 * The default action - show the home page
 	 */
-    public function indexAction() 
-    {
-     	
+    public function indexAction(){    	    	    	
+    	
     }
 	
 	

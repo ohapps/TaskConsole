@@ -5,7 +5,7 @@ require_once 'PHPUnit/TextUI/TestRunner.php';
 
 require_once dirname(__FILE__) . '/models/NotesTest.php';
 require_once dirname(__FILE__) . '/models/ProjectsTest.php';
-require_once dirname(__FILE__) . '/models/ProjectCategoriesTest.php';
+require_once dirname(__FILE__) . '/models/CategoriesTest.php';
 require_once dirname(__FILE__) . '/models/TasksTest.php';
 require_once dirname(__FILE__) . '/models/TopicsTest.php';
 
@@ -28,7 +28,7 @@ class AllTests{
 		// MODELS
 		$suite->addTestSuite('NotesTest');		
 		$suite->addTestSuite('ProjectsTest');
-		$suite->addTestSuite('ProjectCategoriesTest');
+		$suite->addTestSuite('CategoriesTest');
 		$suite->addTestSuite('TasksTest');
 		$suite->addTestSuite('TopicsTest');
 		

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="oh" default="update" basedir=".">	
+    
+	<target name="update">		
+		<echo msg="updating code ..." />
+		<svnupdate
+		   svnpath="/usr/bin/svn"
+		   repositoryurl="http://ohapps.com/repos/Oh/trunk/Oh/"
+		   todir="."		   
+		/>
+    </target>	     
+	
+	<target name="document">    	
+	    <echo msg="documenting code ..." />	 		
+		<phpdoc title="home API Documentation"
+		  destdir="/var/www/html/api/oh"
+		  sourcecode="no"
+		  output="HTML:Smarty:PHP">
+		   <fileset dir=".">
+		      <include name="*.php" />
+		   	  <include name="Db/*.php" />
+		   </fileset>		   
+		</phpdoc>		
+	</target>		
+	
+	<target name="upgrade">
+	    <phingcall target="update"></phingcall>				
+		<phingcall target="document"></phingcall>
+	</target>
+		
+</project>

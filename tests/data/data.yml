@@ -1,80 +1,121 @@
-Console_ProjectCategory:
+Console_User:
+ User_1:
+  ID: 1
+  FIRST_NAME: Craig
+  LAST_NAME: Hausner
+  USERNAME: housedaddy
+  PASSWORD: bc78c173621fc78a2101ea6a11da2a0f
+  ACTIVE: 1
+  CREATED: 2008-02-28 00:00:00
+ User_2:
+  ID: 2
+  FIRST_NAME: Demo
+  LAST_NAME: User
+  USERNAME: demo
+  PASSWORD: bc78c173621fc78a2101ea6a11da2a0f
+  ACTIVE: 1
+  CREATED: 2008-02-28 00:00:00
+  
+Console_Priority:
+ Priority_High:
+  ID: 1
+  DESCRIPTION: high
+ Priority_Normal:
+  ID: 2
+  DESCRIPTION: normal
+ Priority_Low:
+  ID: 3
+  DESCRIPTION: low
+   
+Console_Category:
  Category_1:
   ID: 1
   DESCRIPTION: Work
-  USER_ID: 2
+  USER_ID: 1
  Category_2:
   ID: 2
   DESCRIPTION: Personal
-  USER_ID: 2
+  USER_ID: 1
  Category_3:
   ID: 3
   DESCRIPTION: Goal
-  USER_ID: 2
+  USER_ID: 1
  Category_4:
   ID: 4
   DESCRIPTION: Test
   USER_ID: 1
+ Category_5:
+  ID: 5
+  DESCRIPTION: Bad
+  USER_ID: 2
 
 Console_Project:
  Project_1:
   ID: 1
-  DESCRIPTION: Work Stuff
-  COMMENTS: This is work stuff
-  COMPLETE: 0
-  Category: Category_1
+  USER_ID: 1
+  DESCRIPTION: Test
+  COMMENTS: Test
+  AUTO_COMPLETE: 1 
  Project_2:
   ID: 2
+  USER_ID: 1
   DESCRIPTION: Home Repair
   COMMENTS: This is home repair stuff
-  COMPLETE: 0
-  Category: Category_2
+  AUTO_COMPLETE: 1
+  COMPLETED: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
  Project_3:
   ID: 3
-  DESCRIPTION: Financial
-  COMMENTS: This is financial stuff
-  COMPLETE: 1
-  Category: Category_3
- Project_4:
-  ID: 4
-  DESCRIPTION: Other user project
-  COMMENTS: other user project
-  COMPLETE: 0
-  Category: Category_4
+  USER_ID: 2
+  DESCRIPTION: Another User Project
+  COMMENTS: asdf
+  AUTO_COMPLETE: 1
+  
+Console_ProjectCategory:
+ ProjectCategory_1:
+  ID: 1,
+  Category: Category_1
+  Project: Project_1
   
 Console_Task:
  Task_1:
   ID: 1
+  USER_ID: 1
   DESCRIPTION: Test Task
-  Project: Project_1
-  PRIORITY_ID: 1  
-  COMPLETE: 0
+  PROJECT_ID: 1
+  PRIORITY_ID: 1    
   DUE_DATE: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
  Task_2:
   ID: 2
+  USER_ID: 1
   DESCRIPTION: Test Task
-  Project: Project_2
+  PROJECT_ID: 2
   PRIORITY_ID: 2
-  ORIG_ID: 1  
-  COMPLETE: 0
+  ORIG_ID: 1    
   RECUR_UNIT_TYPE: days
   RECUR_UNITS: 7
  Task_3:
   ID: 3
+  USER_ID: 1
   DESCRIPTION: Test Task
-  Project: Project_3
-  PRIORITY_ID: 3  
-  COMPLETE: 1
+  PROJECT_ID: 2  
+  COMPLETED: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
+  PRIORITY_ID: 3    
   RECUR_UNIT_TYPE: days
   RECUR_UNITS: 7
  Task_4:
   ID: 4
-  DESCRIPTION: Test Task
-  Project: Project_4
+  USER_ID: 1
+  DESCRIPTION: Test Task  
   PRIORITY_ID: 3  
-  COMPLETE: 1
+  COMPLETED: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
   RECUR_UNIT_TYPE: days
   RECUR_UNITS: 7  
+
+Console_TaskCategory:
+ TaskCategory_1:
+  ID: 1
+  Category: Category_1
+  Task: Task_1
 
 Console_Topic:
  Topic_1:
@@ -98,22 +139,26 @@ Console_Note:
  Note_1:  
   Topic: Topic_1
   ID: 1
+  USER_ID: 1
   CONTENTS: test
   DESCRIPTION: test
  Note_2:
   Topic: Topic_2
   ID: 2
+  USER_ID: 1
   CONTENTS: test
   DESCRIPTION: test
   LAST_VIEWED: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
  Note_3:
   Topic: Topic_3
   ID: 3
+  USER_ID: 1
   CONTENTS: test
   DESCRIPTION: test
  Note_4:
   Topic: Topic_4
   ID: 4
+  USER_ID: 1
   CONTENTS: test
   DESCRIPTION: test
  
