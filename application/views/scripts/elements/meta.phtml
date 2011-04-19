@@ -10,6 +10,17 @@
 	<script type="text/javascript" src="<?= $this->baseUrl(); ?>/html/scripts/ext-3.0.0/adapter/ext/ext-base.js"></script>
     <script type="text/javascript" src="<?= $this->baseUrl(); ?>/html/scripts/ext-3.0.0/ext-all.js"></script>    
     <script type="text/javascript" src="<?= $this->baseUrl(); ?>/html/scripts/ext_extensions/Ext.ux.EasyEditorGridPanel.js"></script>        						
-    <script type="text/javascript" src="<?= $this->baseUrl(); ?>/html/scripts/main.js"></script>            
+    <script type="text/javascript" src="<?= $this->baseUrl(); ?>/html/scripts/main.js"></script>
+    
+    <script type="text/javascript">
+
+    	Ext.BLANK_IMAGE_URL = '<?= $this->baseUrl(); ?>/html/scripts/ext-3.0.0/resources/images/default/s.gif' ;  	  	
+	 	Ext.QuickTips.init();    
+	 	Ext.data.Connection.prototype.disableCaching = false;
+	  	Ext.MessageBox.minWidth = 400;	  	
+	
+	  	var ynss = new Ext.data.SimpleStore( { id: 0, fields: ["key", "val"], data : [ ["1","yes"], ["0","no"] ] } ) ;
+	
+    </script>                    
 	
 </head>

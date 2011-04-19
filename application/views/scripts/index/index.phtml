@@ -1620,14 +1620,14 @@ var topic_grid = new Ext.ux.EasyEditorGridPanel({
     tbar: [
               { 
                   text: "Add",
-                  icon: "/images/add.png",
+                  icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
                   handler : function(){
                   		topic_grid.addNewRow({ rec : new Topic({ ID: "", DESCRIPTION: "" }) });
                   }
               },
               {
                   text: "Delete",
-                  icon: "/images/delete.png",
+                  icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
                   handler : function(){
 						Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this item?", function(btn){ 
                           	if ( btn == "yes"){
@@ -1638,7 +1638,7 @@ var topic_grid = new Ext.ux.EasyEditorGridPanel({
               },
               {
                   text: "Save",
-                  icon: "/images/bullet_disk.png",
+                  icon: "<?= $this->baseUrl(); ?>/html/images/bullet_disk.png",
                   handler : function(){
     					topic_grid.postGrid( { url: "<?= $this->baseUrl(); ?>/notes/save-topic", updatePK : true, maskSave: true });
                   }              
@@ -1669,7 +1669,7 @@ var topic_tree_tb = new Ext.Toolbar({
   items: [
             {  
                 text : "Edit Topics",
-                icon: "/images/application_edit.png",
+                icon: "<?= $this->baseUrl(); ?>/html/images/application_edit.png",
                 handler: function(){
             		topic_window.show();
                 }
@@ -1836,7 +1836,7 @@ var note_panel = new Ext.Panel({
     tbar: [
               { 
                   text: "New Note",
-                  icon: "/images/add.png",
+                  icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
                   handler : function(){
             	  		note_form.getForm().reset();
                   		note_window.show();
