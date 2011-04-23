@@ -5,7 +5,7 @@
 	<div id="lnks">
 		<?php if( isset( $this->user ) ){ ?>
 			<?php if( $this->user != false ){ ?>
-				Welcome, <?= $this->user->getFirstName() ?> | <a href="<?= $this->logout_url ?>">logout</a>
+				Welcome, <?= $this->user->getFirstName() ?> | <a href="<?= $this->baseUrl(); ?>/user/logout">logout</a>
 			<?php } ?>
 		<?php } ?>		
 	</div>			
