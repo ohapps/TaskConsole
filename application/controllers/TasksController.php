@@ -214,7 +214,7 @@ class TasksController extends Zend_Controller_Action {
 			$data[] = array(
 				"ID" => $task->ID,
 				"PROJECT_ID" => $task->PROJECT_ID,
-				"PROJECT" => ( $task->PROJECT_ID != null )? $task->Project->DESCRIPTION : "",				
+				"PROJECT" => ( $task->PROJECT_ID != null && $task->PROJECT_ID != 0 )? $task->Project->DESCRIPTION : "",				
 				"DESCRIPTION" => $task->DESCRIPTION,
 				"PRIORITY_ID" => $task->PRIORITY_ID,
 				"PRIORITY" => $task->Priority->DESCRIPTION,
