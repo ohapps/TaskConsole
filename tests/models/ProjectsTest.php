@@ -90,6 +90,90 @@ class ProjectsTest extends AbstractTest {
 	}
 	
 	
+	public function testMarkComplete(){
+		
+		$config = $this->bootstrap->getOption('app');
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(1);
+		
+		$this->assertEquals( $project->isComplete(), false );
+		
+		$project->markComplete($config['date']['dbFormat']);
+		
+		$this->assertEquals( $project->isComplete(), true );
+		
+	}
+	
+	
+	public function testMarkIncomplete(){				
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(2);
+		
+		$this->assertEquals( $project->isComplete(), true );
+		
+		$project->markIncomplete();
+		
+		$this->assertEquals( $project->isComplete(), false );	
+		
+	}
+	
+	
+	public function testHasCategory(){
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(1);
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(1);
+		
+		$this->assertEquals( $project->hasCategory($category), true );
+				
+	}
+	
+	
+	public function testApplyCategory(){
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(1);
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(2);
+		
+		$this->assertEquals( $project->hasCategory($category), false );
+		
+		$project->applyCategory($category);
+		
+		$this->assertEquals( $project->hasCategory($category), true );
+		
+	}
+	
+	
+	public function testRemoveCategory(){
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(1);
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(1);
+		
+		$this->assertEquals( $project->hasCategory($category), true );
+		
+		$project->removeCategory($category);
+		
+		$this->assertEquals( $project->hasCategory($category), false );
+		
+	}
+	
+	
+	public function testCategoryList(){
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(1);
+		
+		$this->assertEquals( $project->categoryList(), 'Work' );
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(2);
+		
+		$project->applyCategory($category);
+		
+		$this->assertEquals( $project->categoryList(), 'Personal, Work' );
+		
+	}
+	
+	
 }
 
 ?>
