@@ -126,11 +126,11 @@ class Console_Task extends Doctrine_Record {
     
     public function preSave($event){
     	
-    	/*
+    	
     	if($this->PROJECT_ID == 0){
     		$this->PROJECT_ID = null;
     	}
-    	*/
+    	
     	
     }
     

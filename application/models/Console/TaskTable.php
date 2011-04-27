@@ -93,7 +93,7 @@ class Console_TaskTable extends Doctrine_Table{
     	
     	return 	$this->createQuery('t')
     			->where('t.ORIG_ID = ?', $id)
-    			->andWhere('t.COMPLETED = null')
+    			->andWhere('t.COMPLETED is null')
     			->execute();
     	
     }

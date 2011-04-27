@@ -59,8 +59,7 @@ var category_grid = new Ext.ux.EasyEditorGridPanel({
 
 category_window = new Ext.Window({
     
-    title: "Categories",                                            	  
-    //bodyStyle: "padding:5px;",
+    title: "Categories",                                            	      
     closeAction: 'hide',
 	modal: true,
 	width: 400,
@@ -208,12 +207,11 @@ var task_queue_cm = new Ext.grid.ColumnModel([
 	task_queue_sm,
 	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },
 	{ header: "", dataIndex: "ID", width: 50, menuDisabled: true, hideable: false, renderer: formatMoveInQueueLink },	
-	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false },
-	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: false },
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false },	
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
 	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false },
-	{ id: "queue_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: false }       
-	
+	{ id: "queue_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: false },
+	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: false }       	
 ]);
                            	
 var task_queue_store = new Ext.data.Store({ 
@@ -354,11 +352,11 @@ var task_pending_cm = new Ext.grid.ColumnModel([
 	task_pending_sm,
 	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: true },
-	{ header: "Queued", dataIndex: "QUEUE_ORDER", width: 50, renderer: queuedRenderer, sortable: false },
-	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: true },
+	{ header: "Queued", dataIndex: "QUEUE_ORDER", width: 50, renderer: queuedRenderer, sortable: false },	
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
 	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: true },
-	{ id: "pending_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: true }                                                 
+	{ id: "pending_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: true },
+	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: true }                                                 
 ]);
                                                                      	
 var task_pending_store = new Ext.data.Store({ 
