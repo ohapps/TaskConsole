@@ -232,4 +232,19 @@ class Console_Project extends Doctrine_Record {
     }
     
     
+	public function categoryIdsList(){
+
+    	$cats = array();
+    	
+    	foreach( $this->Categories as $category ){
+    		$cats[] = $category->ID;
+    	}
+    	
+    	asort($cats);
+    	
+    	return implode(',',$cats);
+    	
+    }
+    
+    
 }

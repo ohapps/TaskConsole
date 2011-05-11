@@ -275,6 +275,14 @@ class Console_Task extends Doctrine_Record {
     }
     
     
+    public function isQueued(){
+    	if( $this->QUEUE_ORDER != null ){
+    		return true;
+    	}
+    	return false;
+    }
+    
+    
 	public function addToQueue(){
 
 		$max = 0;
@@ -375,6 +383,21 @@ class Console_Task extends Doctrine_Record {
     }
     
     
+	public function categoryIdsList(){
+
+    	$cats = array();
+    	
+    	foreach( $this->Categories as $category ){
+    		$cats[] = $category->ID;
+    	}
+    	
+    	asort($cats);
+    	
+    	return implode(',',$cats);
+    	
+    }
+    
+    
     public function hasCategory(Console_Category $category){
     	
     	foreach( $this->Categories as $cat ){
@@ -384,6 +407,35 @@ class Console_Task extends Doctrine_Record {
     	}
     	
     	return false;
+    	
+    }
+    
+    
+    public function setCategoriesFromArray(array $ids){
+    	    	
+    	foreach( $this->Categories as $category ){
+    		
+    		if( in_array($category->ID,$ids) === false ){
+    			$this->removeCategory($category);    			
+    		}
+    		
+    	}    	    	    
+    	
+    	foreach( $ids as $id ){
+    					
+    		$category = Doctrine_Core::getTable('Console_Category')->find($id);
+	
+			if( $category == false ){
+				throw new Exception('invalid category id');
+			}
+		
+			if( $category->isUserCategory($this->USER_ID) == false ){    			
+				throw new Exception('category does not belong to current user');
+			}
+	    				
+			$this->applyCategory($category);
+    					
+    	}
     	
     }
     

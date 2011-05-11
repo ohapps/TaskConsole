@@ -403,13 +403,19 @@ class ProjectsController extends Zend_Controller_Action
     	$data = array();
     	$projects = Doctrine_Core::getTable('Console_Project')->getByUserId($user->getUserId());    	   		   		   		   		   		   		
     	
+    	$data[] = array(
+    		"ID" => "",
+    		"DESCRIPTION" => "-- task not related to a project --"
+    	);
+    	
     	foreach($projects as $project){
     		if( $project->isActive() ){
 	   			$data[] = array(
 					"ID" => $project->ID,
 	   				"DESCRIPTION" => $project->DESCRIPTION,
 	   				"COMMENTS" => $project->COMMENTS,	   				
-	   				"COMPLETED" => $project->COMPLETED			
+	   				"COMPLETED" => $project->COMPLETED,
+	   				"CATEGORIES" => $project->categoryIdsList()			
 	   			);
     		}
    		}
@@ -510,19 +516,7 @@ class ProjectsController extends Zend_Controller_Action
     	
     	$categories = Doctrine_Core::getTable('Console_Category')->getByUserId($user->getUserId());    	    	
     	
-    	$children = array();
-    	
-    	if( count( $categories ) > 0 ){
-    		
-    		$children[] = array( 
-	    		"id" => "category_all", 
-	    		"text" => "all categories", 
-	    		"leaf" => true, 
-	    		"href" => "javascript:filterTasks('category', '')", 
-	    		"qtip" => "all categories"  
-	    	);
-    		
-    	}
+    	$children = array();    	
     	
     	foreach( $categories as $category ){    		    		    		
     		    		    		    		
@@ -542,8 +536,7 @@ class ProjectsController extends Zend_Controller_Action
     			"id" => "category_filter", 
     			"text" => "filter by category", 
     			"cls" => "folder", 
-    			"expanded" => true, 
-    			//"href" => "javascript:loadTasks('', '". $category->ID ."')", 
+    			"expanded" => true,     			 
     			"children" => $children 
     		);
     		    	
@@ -551,19 +544,7 @@ class ProjectsController extends Zend_Controller_Action
     	
     	$projects = Doctrine_Core::getTable('Console_Project')->getByUserId($user->getUserId(),'active');    	    	    	    	    	    	
     	
-    	$children = array();
-    	
-    	if( count($projects) > 0 ){
-    		
-    		$children[] = array( 
-	    		"id" => "project_all", 
-	    		"text" => "all projects", 
-	    		"leaf" => true, 
-	    		"href" => "javascript:filterTasks('project', '')", 
-	    		"qtip" => "all projects"  
-	    	);
-    		
-    	}
+    	$children = array();    	
     	
     	foreach( $projects as $project ){    		    		    		
     		    		    		    		
@@ -583,8 +564,7 @@ class ProjectsController extends Zend_Controller_Action
     			"id" => "project_filter", 
     			"text" => "filter by project", 
     			"cls" => "folder", 
-    			"expanded" => true, 
-    			//"href" => "javascript:loadTasks('', '". $category->ID ."')", 
+    			"expanded" => true,     			
     			"children" => $children 
     		);
     		    	
