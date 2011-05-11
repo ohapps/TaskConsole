@@ -95,21 +95,38 @@ task_filter.keyword = '';
 
 function filterTasks(filterBy,filterVal){
 
+	if( task_filter.category != '' ){
+		node = task_filter_tree.getNodeById('category_' + task_filter.category);
+		node.getUI().removeClass('filterApply');
+	}
+
+	if( task_filter.project != '' ){
+		node = task_filter_tree.getNodeById('project_' + task_filter.project);
+		node.getUI().removeClass('filterApply');
+	}
+	
+	task_filter.category = '';
+	task_filter.project = '';
+	task_filter.priorities = '';
+	task_filter.keyword = '';
+	
 	switch(filterBy){
 		case "category":
 			if( filterVal != '' ){
 				node = task_filter_tree.getNodeById('category_' + filterVal);
 				node.getUI().addClass('filterApply');				
-			}
-			if( task_filter.category != filterVal && task_filter.category != '' ){
-				node = task_filter_tree.getNodeById('category_' + task_filter.category);
-				node.getUI().removeClass('filterApply');
-			}
+			}			
 			task_filter.category = filterVal;
 			break;			
 		case "project":
+			if( filterVal != '' ){
+				node = task_filter_tree.getNodeById('project_' + filterVal);
+				node.getUI().addClass('filterApply');				
+			}
 			task_filter.project = filterVal;
 			break;
+		default:
+			task_filter_tree.getSelectionModel().clearSelections();
 	}
 
 	var priorities = ''; 
@@ -158,7 +175,7 @@ var task_filter_tree = new Ext.tree.TreePanel({
         }),
         
         root: new Ext.tree.AsyncTreeNode({
-            text: 'All Tasks',
+            text: 'filters',
             id: 'root',
             cls: 'folder',
             expanded: false
@@ -170,7 +187,17 @@ var task_filter_tree = new Ext.tree.TreePanel({
 		    'checkchange': function(node, checked){
 				filterTasks('','');
 		    }			
-		}
+		},
+
+		tbar: [
+	           	{
+	           	  	text: "Reset Filters",
+	           	  	icon: "<?= $this->baseUrl(); ?>/html/images/page_refresh.png",
+	           	  	handler : function(){	             	  		           	  		
+	           	  		filterTasks('','');  		
+	           	  	}
+	           	}
+	           ]
         
 });
 
@@ -181,6 +208,7 @@ var task_filter_tree = new Ext.tree.TreePanel({
 var Task = Ext.data.Record.create([
 	{name: "ID", type: "string"},
 	{name: "PROJECT", type: "string"},
+	{name: "PROJECT_ID", type: "string"},
 	{name: "DESCRIPTION", type: "string"},
 	{name: "PRIORITY", type: "string"},
 	{name: "DUE_DATE", type: "date", dateFormat: "Y-m-d H:i:s"},    
@@ -201,6 +229,15 @@ function formatMoveInQueueLink(value, metaData, record, rowIndex, colIndex, stor
     return '<a href="'+ upLnk +'" title="move up" style=""><img src="<?= $this->baseUrl() ?>/html/images/arrow_up.png" /></a>&nbsp;<a href="'+ downLnk +'" title="move down" style=""><img src="<?= $this->baseUrl() ?>/html/images/arrow_down.png" /></a>';	            
 }
 
+function formatLoadTaskProjectLink(value, metaData, record, rowIndex, colIndex, store){
+	if( value != '' ){
+		lnk = "javascript:loadProject('"+ record.get("PROJECT_ID") + "');";
+    	return '<a href="'+ lnk +'" title="edit project" style="">'+ value +'</a>';
+	}else{
+		return '';
+	}	            
+}
+
 var task_queue_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_queue_cm = new Ext.grid.ColumnModel([	 	
@@ -209,7 +246,7 @@ var task_queue_cm = new Ext.grid.ColumnModel([
 	{ header: "", dataIndex: "ID", width: 50, menuDisabled: true, hideable: false, renderer: formatMoveInQueueLink },	
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false },	
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
-	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false, renderer: formatLoadTaskProjectLink },
 	{ id: "queue_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: false },
 	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: false }       	
 ]);
@@ -257,6 +294,7 @@ var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
 	stripeRows: true,
 	selModel: task_queue_sm,
 	loadMask: true,
+	
 	tbar: [
            	{
            	  	text: "Mark Completed",
@@ -354,7 +392,7 @@ var task_pending_cm = new Ext.grid.ColumnModel([
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: true },
 	{ header: "Queued", dataIndex: "QUEUE_ORDER", width: 50, renderer: queuedRenderer, sortable: false },	
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
-	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: true },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: true, renderer: formatLoadTaskProjectLink },
 	{ id: "pending_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: true },
 	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: true }                                                 
 ]);
@@ -493,7 +531,7 @@ var task_complete_cm = new Ext.grid.ColumnModel([
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
 	{ header: "Completed", dataIndex: "COMPLETED", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
-	{ header: "Project", dataIndex: "PROJECT", width: 200 },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, renderer: formatLoadTaskProjectLink },
 	{ id: "complete_description", header: "Description", dataIndex: "DESCRIPTION", width: 200 }                                                 
 ]);
                                                                                                                  	
@@ -616,7 +654,7 @@ var task_upcoming_cm = new Ext.grid.ColumnModel([
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
 	{ header: "Display Date", dataIndex: "DISPLAY_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
-	{ header: "Project", dataIndex: "PROJECT", width: 200 },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, renderer: formatLoadTaskProjectLink },
 	{ id: "upcoming_description", header: "Description", dataIndex: "DESCRIPTION", width: 200 }                                                 
 ]);
                                                                                                                                                               	
@@ -721,7 +759,7 @@ var task_search_cm = new Ext.grid.ColumnModel([
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
 	{ header: "Completed", dataIndex: "COMPLETED", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
-	{ header: "Project", dataIndex: "PROJECT", width: 200 },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, renderer: formatLoadTaskProjectLink },
 	{ id: "search_description", header: "Description", dataIndex: "DESCRIPTION", width: 200 }                                                 
 ]);
                                                                                                                                                               	
@@ -1053,7 +1091,7 @@ var project_grid = new Ext.ux.EasyEditorGridPanel({
 /**************************************
  * TASK DETAIL WINDOW
  *************************************/
-var project_combo = new Ext.form.ComboBox({ 
+var project_combo = new Ext.form.ComboBox({	
 	fieldLabel: "Project", 
 	hiddenName: "PROJECT_ID", 
 	width: 400,
@@ -1066,7 +1104,14 @@ var project_combo = new Ext.form.ComboBox({
 	triggerAction: "all", 
 	emptyText: " ", 
 	selectOnFocus: true, 
-	editable: false 
+	editable: false,
+	listeners: {
+		select: {
+			fn: function(combo,record){
+				task_form.getForm().findField('CATEGORIES').setValue(record.get("CATEGORIES"));
+			}
+		}
+	}
 });
 
 var priority_store = new Ext.data.Store({ 
@@ -1154,22 +1199,25 @@ var task_form = new Ext.form.FormPanel({
 			height: 100,
 			allowBlank: false
 		},
-		project_combo,
-		{ 
-			xtype: "combo",
-			fieldLabel: "Apply Category",
-			hiddenName: "CATEGORY_ID", 	 
-			width: 400,	 
-			store: category_store, 
-			valueField: "ID", 
-			displayField: "DESCRIPTION", 
-			typeAhead: true, 
-			mode: "local", 
-			triggerAction: "all", 
-			emptyText: "", 
-			selectOnFocus: true, 
-			editable: false
-		},
+		project_combo,		
+		{
+            xtype: 'multiselect',
+            fieldLabel: 'Categories',
+            name: 'CATEGORIES',
+            width: 400,
+            height: 125,
+            style: "background: #FFFFFF;",            
+            allowBlank: true,            
+            store: category_store,
+            displayField: "DESCRIPTION",
+            valueField: "ID",
+            tbar:[{
+                text: 'clear',
+                handler: function(){
+	                task_form.getForm().findField('CATEGORIES').reset();
+	            }
+            }]
+        },		
 		priority_combo,
 		{ 
 			xtype: "datefield", 
@@ -1305,9 +1353,18 @@ task_window = new Ext.Window({
 
 
 function newTasks(){
+
 	task_window.show();
 	task_form.getForm().reset();	
-	project_combo.setValue( task_filter.project );
+
+	if( task_filter.project != '' ){
+		project_combo.setValue( task_filter.project );
+		rec = project_combo.store.getById( task_filter.project );
+		task_form.getForm().findField('CATEGORIES').setValue( rec.get("CATEGORIES") );
+	}else if( task_filter.category != '' ){
+		task_form.getForm().findField('CATEGORIES').setValue( task_filter.category );
+	}
+	
 	task_window.center();
 }
 

@@ -53,24 +53,16 @@ class TasksController extends Zend_Controller_Action {
     		
     		try{    			    				
     			
-    			$task->save();
+    			$task->save();    			    			
     			
-    			if( $this->_getParam('CATEGORY_ID') != null ){
-
-	    			$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('CATEGORY_ID') );
-	
-					if( $category == false ){
-						throw new Exception('invalid category id');
-					}
-	
-					if( $category->isUserCategory($user->getUserId()) == false ){    			
-			    		throw new Exception('category does not belong to current user');
-			    	}
-    				
-			    	$task->applyCategory($category);
-			    	
+    			if( $this->_getParam('CATEGORIES') != null ){    				
+    				$categories = explode(',',$this->_getParam('CATEGORIES'));    				    				    				    				    				
+    			}else{
+    				$categories = array();
     			}
     			
+    			$task->setCategoriesFromArray($categories);
+    			    			
     			if( $this->_getParam('ADD_TO_QUEUE') == '1' ){
     				$task->addToQueue();
     			}
@@ -160,7 +152,9 @@ class TasksController extends Zend_Controller_Action {
 				"DUE_DATE" => $this->_helper->date->format($task->DUE_DATE,$config['date']['appFormat']),				
 				"COMPLETED" => $this->_helper->date->format($task->COMPLETED,$config['date']['appFormat']),				
 				"RECUR_UNIT_TYPE" => $task->RECUR_UNIT_TYPE,
-				"RECUR_UNITS" => $task->RECUR_UNITS
+				"RECUR_UNITS" => $task->RECUR_UNITS,
+				"ADD_TO_QUEUE" => $task->isQueued(),
+				"CATEGORIES" => $task->categoryIdsList()
 			);
 			
 			$this->_helper->json->sendJson( array( "success" => "true", "data" => $data ) );
