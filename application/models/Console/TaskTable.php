@@ -16,6 +16,8 @@ class Console_TaskTable extends Doctrine_Table{
     
 	public function getPagedResultsByUserId($user_id, $options = array(), $page=1, $pageSize=50){        
         
+		$sort = '';
+		
     	$query = $this->createQuery('t')
         		->leftJoin( 't.Project p' )        		
         		->leftJoin( 't.Categories c' )
@@ -39,10 +41,13 @@ class Console_TaskTable extends Doctrine_Table{
 					$query->andWhere("t.COMPLETED is null")
 						  ->andWhere("t.QUEUE_ORDER is not null")
 						  ->andWhere('( t.DISPLAY_DATE <= CURDATE() or t.DISPLAY_DATE is null )');
+					$sort = 't.PRIORITY_ID, p.DESCRIPTION ASC';	  					
 					break;
 				case "pending":
 					$query->andWhere("t.COMPLETED is null")
+						  ->andWhere("t.QUEUE_ORDER is null")	
 						  ->andWhere('( t.DISPLAY_DATE <= CURDATE() or t.DISPLAY_DATE is null )');
+					$sort = 't.PRIORITY_ID, p.DESCRIPTION ASC';		  
 					break;
 				case "complete":
 					$query->andWhere("t.COMPLETED is not null");
@@ -67,15 +72,19 @@ class Console_TaskTable extends Doctrine_Table{
 			}
 		}
 		
-		if( isset($options['sort']) && isset($options['dir']) ){
+		if( isset($options['sort']) && isset($options['dir']) && $sort == '' ){
 			$sort = strtr( 
 				$options['sort'], 
 				array(
 					"PRIORITY" => "t.PRIORITY_ID",
 					"PROJECT" => "p.DESCRIPTION"				
 				)
-			);
-			$query->orderBy( $sort . ' ' . $options['dir'] );
+			)
+			. ' ' . $options['dir'];			
+		}
+		
+		if( $sort != '' ){
+			$query->orderBy( $sort  );
 		}
 		
         $pager = new Doctrine_Pager(
