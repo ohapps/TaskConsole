@@ -93,38 +93,44 @@ task_filter.project = '';
 task_filter.priorities = '';
 task_filter.keyword = '';
 
-function filterTasks(filterBy,filterVal){
-
-	if( task_filter.category != '' ){
-		node = task_filter_tree.getNodeById('category_' + task_filter.category);
-		node.getUI().removeClass('filterApply');
-	}
-
-	if( task_filter.project != '' ){
-		node = task_filter_tree.getNodeById('project_' + task_filter.project);
-		node.getUI().removeClass('filterApply');
-	}
-	
-	task_filter.category = '';
-	task_filter.project = '';
-	task_filter.priorities = '';
-	task_filter.keyword = '';
+function filterTasks(filterBy,filterVal){		
 	
 	switch(filterBy){
 		case "category":
 			if( filterVal != '' ){
-				node = task_filter_tree.getNodeById('category_' + filterVal);
-				node.getUI().addClass('filterApply');				
+				if( task_filter.category != '' && task_filter.category != filterVal ){
+					addRemoveFilterClass('category','remove',task_filter.category);					
+				}				
+				addRemoveFilterClass('category','add',filterVal);																				
+			}
+			if( task_filter.project != '' ){
+				addRemoveFilterClass('project','remove',task_filter.project);
+				task_filter.project = '';
 			}			
 			task_filter.category = filterVal;
 			break;			
 		case "project":
 			if( filterVal != '' ){
-				node = task_filter_tree.getNodeById('project_' + filterVal);
-				node.getUI().addClass('filterApply');				
+				if( task_filter.project != '' && task_filter.project != filterVal ){
+					addRemoveFilterClass('project','remove',task_filter.project);
+				}
+				addRemoveFilterClass('project','add',filterVal);				
+			}
+			if( task_filter.category != '' ){
+				addRemoveFilterClass('category','remove',task_filter.category);
+				task_filter.category = '';
 			}
 			task_filter.project = filterVal;
 			break;
+		case "reset":
+			if( task_filter.project != '' ){
+				addRemoveFilterClass('project','remove',task_filter.project);
+				task_filter.project = '';
+			}
+			if( task_filter.category != '' ){
+				addRemoveFilterClass('category','remove',task_filter.category);
+				task_filter.category = '';
+			}
 		default:
 			task_filter_tree.getSelectionModel().clearSelections();
 	}
@@ -150,6 +156,14 @@ function filterTasks(filterBy,filterVal){
 	
 }
 
+function addRemoveFilterClass(type,action,val){
+	node = task_filter_tree.getNodeById( type + '_' + val);
+	if( action == "add" ){
+		node.getUI().addClass('filterApply');
+	}else{
+		node.getUI().removeClass('filterApply');
+	}
+}
 
 /*********************
 * TASK FILTER TREE
@@ -194,7 +208,7 @@ var task_filter_tree = new Ext.tree.TreePanel({
 	           	  	text: "Reset Filters",
 	           	  	icon: "<?= $this->baseUrl(); ?>/html/images/page_refresh.png",
 	           	  	handler : function(){	             	  		           	  		
-	           	  		filterTasks('','');  		
+	           	  		filterTasks('reset','');  		
 	           	  	}
 	           	}
 	           ]
