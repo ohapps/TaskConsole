@@ -207,6 +207,10 @@ class Console_Task extends Doctrine_Record {
 					$task->DISPLAY_DATE = $display_date->toString($format);
 					$task->save();
 	    			
+					foreach( $this->Categories as $category ){
+						$task->applyCategory($category);
+					}
+					
 	    		}	    		
 	    		
 	    	}
