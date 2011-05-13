@@ -164,6 +164,7 @@ class ProjectsController extends Zend_Controller_Action
     			
     		}
 
+    		/*
     		if( $this->_getParam('CATEGORY_ID') != null ){
 
 	    			$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('CATEGORY_ID') );
@@ -179,6 +180,15 @@ class ProjectsController extends Zend_Controller_Action
 			    	$project->applyCategory($category);
 			    	
     		}
+    		*/
+    		
+    		if( $this->_getParam('CATEGORIES') != null ){    				
+    			$categories = explode(',',$this->_getParam('CATEGORIES'));    				    				    				    				    				
+    		}else{
+    			$categories = array();
+    		}
+    			
+    		$project->setCategoriesFromArray($categories);
     		
 	    	$this->_helper->json->sendJson( array( "success" => true, "id" => $project->ID ) );	    	
     	}catch( Exception $e ){

@@ -1472,7 +1472,26 @@ var project_form = new Ext.form.FormPanel({
 					width: 400,
 					height: 150,
 					allowBlank: true
-				},{ 
+				},{
+		            xtype: 'multiselect',
+		            fieldLabel: 'Categories',
+		            name: 'CATEGORIES',
+		            width: 400,
+		            height: 125,
+		            style: "background: #FFFFFF;",            
+		            allowBlank: true,            
+		            store: category_store,
+		            displayField: "DESCRIPTION",
+		            valueField: "ID",
+		            tbar:[{
+		                text: 'clear',
+		                handler: function(){
+			                project_form.getForm().findField('CATEGORIES').reset();
+			            }
+		            }]
+		        }
+				/*
+		        ,{ 
 					xtype: "combo",
 					fieldLabel: "Apply Category",
 					hiddenName: "CATEGORY_ID", 	 
@@ -1486,7 +1505,9 @@ var project_form = new Ext.form.FormPanel({
 					emptyText: "", 
 					selectOnFocus: true, 
 					editable: false
-				},{ 
+				}
+				*/
+				,{ 
 					xtype: "combo",
 					fieldLabel: "Status",
 					hiddenName: "STATUS", 	 

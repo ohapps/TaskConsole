@@ -193,6 +193,35 @@ class Console_Project extends Doctrine_Record {
     }
     
     
+	public function setCategoriesFromArray(array $ids){
+    	    	
+    	foreach( $this->Categories as $category ){
+    		
+    		if( in_array($category->ID,$ids) === false ){
+    			$this->removeCategory($category);    			
+    		}
+    		
+    	}    	    	    
+    	
+    	foreach( $ids as $id ){
+    					
+    		$category = Doctrine_Core::getTable('Console_Category')->find($id);
+	
+			if( $category == false ){
+				throw new Exception('invalid category id');
+			}
+		
+			if( $category->isUserCategory($this->USER_ID) == false ){    			
+				throw new Exception('category does not belong to current user');
+			}
+	    				
+			$this->applyCategory($category);
+    					
+    	}
+    	
+    }
+    
+    
 	public function applyCategory(Console_Category $category){
     	    	    	
     	if( $this->hasCategory($category) === false ){
