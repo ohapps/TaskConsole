@@ -93,38 +93,44 @@ task_filter.project = '';
 task_filter.priorities = '';
 task_filter.keyword = '';
 
-function filterTasks(filterBy,filterVal){
-
-	if( task_filter.category != '' ){
-		node = task_filter_tree.getNodeById('category_' + task_filter.category);
-		node.getUI().removeClass('filterApply');
-	}
-
-	if( task_filter.project != '' ){
-		node = task_filter_tree.getNodeById('project_' + task_filter.project);
-		node.getUI().removeClass('filterApply');
-	}
-	
-	task_filter.category = '';
-	task_filter.project = '';
-	task_filter.priorities = '';
-	task_filter.keyword = '';
+function filterTasks(filterBy,filterVal){		
 	
 	switch(filterBy){
 		case "category":
 			if( filterVal != '' ){
-				node = task_filter_tree.getNodeById('category_' + filterVal);
-				node.getUI().addClass('filterApply');				
+				if( task_filter.category != '' && task_filter.category != filterVal ){
+					addRemoveFilterClass('category','remove',task_filter.category);					
+				}				
+				addRemoveFilterClass('category','add',filterVal);																				
+			}
+			if( task_filter.project != '' ){
+				addRemoveFilterClass('project','remove',task_filter.project);
+				task_filter.project = '';
 			}			
 			task_filter.category = filterVal;
 			break;			
 		case "project":
 			if( filterVal != '' ){
-				node = task_filter_tree.getNodeById('project_' + filterVal);
-				node.getUI().addClass('filterApply');				
+				if( task_filter.project != '' && task_filter.project != filterVal ){
+					addRemoveFilterClass('project','remove',task_filter.project);
+				}
+				addRemoveFilterClass('project','add',filterVal);				
+			}
+			if( task_filter.category != '' ){
+				addRemoveFilterClass('category','remove',task_filter.category);
+				task_filter.category = '';
 			}
 			task_filter.project = filterVal;
 			break;
+		case "reset":
+			if( task_filter.project != '' ){
+				addRemoveFilterClass('project','remove',task_filter.project);
+				task_filter.project = '';
+			}
+			if( task_filter.category != '' ){
+				addRemoveFilterClass('category','remove',task_filter.category);
+				task_filter.category = '';
+			}
 		default:
 			task_filter_tree.getSelectionModel().clearSelections();
 	}
@@ -150,6 +156,14 @@ function filterTasks(filterBy,filterVal){
 	
 }
 
+function addRemoveFilterClass(type,action,val){
+	node = task_filter_tree.getNodeById( type + '_' + val);
+	if( action == "add" ){
+		node.getUI().addClass('filterApply');
+	}else{
+		node.getUI().removeClass('filterApply');
+	}
+}
 
 /*********************
 * TASK FILTER TREE
@@ -194,7 +208,7 @@ var task_filter_tree = new Ext.tree.TreePanel({
 	           	  	text: "Reset Filters",
 	           	  	icon: "<?= $this->baseUrl(); ?>/html/images/page_refresh.png",
 	           	  	handler : function(){	             	  		           	  		
-	           	  		filterTasks('','');  		
+	           	  		filterTasks('reset','');  		
 	           	  	}
 	           	}
 	           ]
@@ -223,12 +237,6 @@ function formatEditTaskLink(value, metaData, record, rowIndex, colIndex, store){
     return '<a href="'+ lnk +'" title="edit" style=""><img src="<?= $this->baseUrl() ?>/html/images/application_edit.png" /></a>';	            
 }
 
-function formatMoveInQueueLink(value, metaData, record, rowIndex, colIndex, store){	
-	upLnk = "javascript:moveInQueue('up','"+ value + "');";
-	downLnk = "javascript:moveInQueue('down','"+ value + "');";
-    return '<a href="'+ upLnk +'" title="move up" style=""><img src="<?= $this->baseUrl() ?>/html/images/arrow_up.png" /></a>&nbsp;<a href="'+ downLnk +'" title="move down" style=""><img src="<?= $this->baseUrl() ?>/html/images/arrow_down.png" /></a>';	            
-}
-
 function formatLoadTaskProjectLink(value, metaData, record, rowIndex, colIndex, store){
 	if( value != '' ){
 		lnk = "javascript:loadProject('"+ record.get("PROJECT_ID") + "');";
@@ -242,23 +250,23 @@ var task_queue_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_queue_cm = new Ext.grid.ColumnModel([	 	
 	task_queue_sm,
-	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },
-	{ header: "", dataIndex: "ID", width: 50, menuDisabled: true, hideable: false, renderer: formatMoveInQueueLink },	
-	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false },	
-	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
-	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false, renderer: formatLoadTaskProjectLink },
-	{ id: "queue_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: false },
-	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: false }       	
+	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false, hidden: true },	
+	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false, groupable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false, groupable: false, renderer: formatLoadTaskProjectLink },
+	{ id: "queue_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: false, groupable: false },
+	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: false, groupable: false }       	
 ]);
                            	
-var task_queue_store = new Ext.data.Store({ 
+var task_queue_store = new Ext.data.GroupingStore({ 
 	url: "<?= $this->baseUrl(); ?>/tasks/user-tasks/status/queue",
 	baseParams: task_filter, 
-	remoteSort: true,
+	remoteSort: true,	
 	sortInfo: {
-		field: 'QUEUE_ORDER',
+		field: 'PRIORITY',
 		direction: 'ASC'
 	},
+	groupField: 'PRIORITY',	
 	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Task), 
 	autoLoad: false 
 });		
@@ -294,6 +302,10 @@ var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
 	stripeRows: true,
 	selModel: task_queue_sm,
 	loadMask: true,
+	view: new Ext.grid.GroupingView({
+        forceFit: false,        
+        groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "Tasks" : "Task"]})'
+    }),
 	
 	tbar: [
            	{
@@ -380,24 +392,17 @@ var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
 
 var task_pending_sm = new Ext.grid.CheckboxSelectionModel();
 
-function queuedRenderer(value){
-	if( value != '' && value != null){
-		return 'yes';
-	}
-}
-
 var task_pending_cm = new Ext.grid.ColumnModel([
 	task_pending_sm,
 	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
-	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: true },
-	{ header: "Queued", dataIndex: "QUEUE_ORDER", width: 50, renderer: queuedRenderer, sortable: false },	
-	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
-	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: true, renderer: formatLoadTaskProjectLink },
-	{ id: "pending_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: true },
-	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: true }                                                 
+	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false, hidden: true },		
+	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false, groupable: false },
+	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false, groupable: false, renderer: formatLoadTaskProjectLink },
+	{ id: "pending_description", header: "Description", dataIndex: "DESCRIPTION", width: 200, sortable: false, groupable: false },
+	{ header: "Due Date", dataIndex: "DUE_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y"), sortable: false, groupable: false }                                                 
 ]);
                                                                      	
-var task_pending_store = new Ext.data.Store({ 
+var task_pending_store = new Ext.data.GroupingStore({ 
 	url: "<?= $this->baseUrl(); ?>/tasks/user-tasks/status/pending",
 	baseParams: task_filter, 
 	remoteSort: true,
@@ -405,6 +410,7 @@ var task_pending_store = new Ext.data.Store({
 		field: 'PRIORITY',
 		direction: 'ASC'
 	},
+	groupField: 'PRIORITY',
 	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Task), 
 	autoLoad: false 
 });		
@@ -440,6 +446,10 @@ var task_pending_grid = new Ext.ux.EasyEditorGridPanel({
 	stripeRows: true,
 	selModel: task_pending_sm,
 	loadMask: true,
+	view: new Ext.grid.GroupingView({
+        forceFit: false,        
+        groupTextTpl: '{text} ({[values.rs.length]} {[values.rs.length > 1 ? "Tasks" : "Task"]})'
+    }),
 	tbar: [
           	{
           	  	text: "Mark Completed",

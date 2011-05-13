@@ -207,6 +207,10 @@ class Console_Task extends Doctrine_Record {
 					$task->DISPLAY_DATE = $display_date->toString($format);
 					$task->save();
 	    			
+					foreach( $this->Categories as $category ){
+						$task->applyCategory($category);
+					}
+					
 	    		}	    		
 	    		
 	    	}
@@ -316,56 +320,7 @@ class Console_Task extends Doctrine_Record {
     	
     	return true;
     	
-    }
-    
-    
-    public function moveInQueue($dir){
-    	
-    	if( $dir != 'up' && $dir != 'down' ){
-    		throw new Exception('invalid direction when moving task in queue');    		    	
-    	}
-    	
-    	$tasks = Doctrine_Core::getTable('Console_Task')->getTasksInQueue($this->USER_ID);
-    	
-    	$swapTask = null;
-    	
-    	foreach( $tasks as $task ){
-   			   			
-   			if( $dir == 'up' ){
-   				
-   				if( $task->QUEUE_ORDER < $this->QUEUE_ORDER ){
-   					if( $swapTask == null ){
-   						$swapTask = $task;
-   					}else if( $task->QUEUE_ORDER > $swapTask->QUEUE_ORDER ){
-   						$swapTask = $task;
-   					}
-   				}
-   			
-   			}else{
-
-   				if( $task->QUEUE_ORDER > $this->QUEUE_ORDER ){
-   					if( $swapTask == null ){
-   						$swapTask = $task;
-   					}else if( $task->QUEUE_ORDER < $swapTask->QUEUE_ORDER ){
-   						$swapTask = $task;
-   					}
-   				}
-   				
-   			}   			
-   				
-   		}
-   		
-   		if( $swapTask != null ){
-   			
-   			$newOrder = $swapTask->QUEUE_ORDER;
-   			$swapTask->QUEUE_ORDER = $this->QUEUE_ORDER;
-   			$this->QUEUE_ORDER = $newOrder;
-   			$swapTask->save();
-   			$this->save();
-   			
-   		}
-    	
-    }
+    }            
     
     
     public function categoryList(){

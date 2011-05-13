@@ -502,38 +502,7 @@ class TasksController extends Zend_Controller_Action {
     		$this->_helper->json->sendJson( array( "success" => false ) );    		
     	} 
 		
-	}
-	
-	
-	public function moveTaskInQueueAction(){
-		
-		$user = Zend_Registry::get('user');
-		
-		try{
-			
-			if( $this->_hasParam('id') ){
-			    			    							
-				$task = Doctrine_Core::getTable('Console_Task')->find($this->_getParam('id'));
-
-				if( $task == false ){
-					throw new Exception('invalid task id');
-				}
-
-				if( $task->isUserTask($user->getUserId()) == false ){    			
-		    		throw new Exception('task does not belong to current user');
-		    	}
-					
-				$task->moveInQueue($this->_getParam('dir'));																																														
-							
-			}
-			
-			$this->_helper->json->sendJson( array( "success" => true ) );	
-		}catch( Exception $e ){
-			$this->_helper->logger->log()->err( $e->getMessage() );			    				
-    		$this->_helper->json->sendJson( array( "success" => false ) );    		
-    	} 
-		
-	}
+	}			
 	
 	
 }	
