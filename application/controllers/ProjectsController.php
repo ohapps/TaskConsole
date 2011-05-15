@@ -129,7 +129,8 @@ class ProjectsController extends Zend_Controller_Action
     	
     	try{
     		
-    		$user = Zend_Registry::get('user');    		    		
+    		$user = Zend_Registry::get('user');
+    		$reload = false;    		    		
     		
     		if( $this->_getParam('ID') != "" ){
     			
@@ -146,6 +147,11 @@ class ProjectsController extends Zend_Controller_Action
     		}else{
     			$project = new Console_Project();
     			$project->USER_ID = $user->getUserId();
+    			$reload = true;
+    		}
+    		
+    		if( $project->DESCRIPTION != $this->_getParam('DESCRIPTION') ){
+    			$reload = true;
     		}
     		
     		$project->DESCRIPTION = $this->_getParam('DESCRIPTION');
@@ -162,25 +168,7 @@ class ProjectsController extends Zend_Controller_Action
     			
     			$project->markIncomplete();
     			
-    		}
-
-    		/*
-    		if( $this->_getParam('CATEGORY_ID') != null ){
-
-	    			$category = Doctrine_Core::getTable('Console_Category')->find($this->_getParam('CATEGORY_ID') );
-	
-					if( $category == false ){
-						throw new Exception('invalid category id');
-					}
-	
-					if( $category->isUserCategory($user->getUserId()) == false ){    			
-			    		throw new Exception('category does not belong to current user');
-			    	}
-    				
-			    	$project->applyCategory($category);
-			    	
-    		}
-    		*/
+    		}    		
     		
     		if( $this->_getParam('CATEGORIES') != null ){    				
     			$categories = explode(',',$this->_getParam('CATEGORIES'));    				    				    				    				    				
@@ -190,7 +178,7 @@ class ProjectsController extends Zend_Controller_Action
     			
     		$project->setCategoriesFromArray($categories);
     		
-	    	$this->_helper->json->sendJson( array( "success" => true, "id" => $project->ID ) );	    	
+	    	$this->_helper->json->sendJson( array( "success" => true, "reload" => $reload, "id" => $project->ID ) );	    	
     	}catch( Exception $e ){
     		$this->_helper->json->sendJson( array( "success" => false, "error" => $e->getMessage()) );	
     	}

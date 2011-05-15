@@ -132,6 +132,12 @@ function filterTasks(filterBy,filterVal){
 				task_filter.category = '';
 			}
 		default:
+			if( task_filter.project != '' ){
+				addRemoveFilterClass('project','add',task_filter.project);				
+			}
+			if( task_filter.category != '' ){
+				addRemoveFilterClass('category','add',task_filter.category);				
+			}
 			task_filter_tree.getSelectionModel().clearSelections();
 	}
 
@@ -1489,25 +1495,7 @@ var project_form = new Ext.form.FormPanel({
 			                project_form.getForm().findField('CATEGORIES').reset();
 			            }
 		            }]
-		        }
-				/*
-		        ,{ 
-					xtype: "combo",
-					fieldLabel: "Apply Category",
-					hiddenName: "CATEGORY_ID", 	 
-					width: 400,	 
-					store: category_store, 
-					valueField: "ID", 
-					displayField: "DESCRIPTION", 
-					typeAhead: true, 
-					mode: "local", 
-					triggerAction: "all", 
-					emptyText: "", 
-					selectOnFocus: true, 
-					editable: false
-				}
-				*/
-				,{ 
+		        },{ 
 					xtype: "combo",
 					fieldLabel: "Status",
 					hiddenName: "STATUS", 	 
@@ -1627,16 +1615,18 @@ function saveProject(){
 					project_window.hide();
 					all_project_store.reload();
 					project_store.reload(); 					
-					
-					task_filter_tree.getRootNode().reload(
-							function(){
-								if( project_form.getForm().findField("ID").getValue() == '' && act.result.id != '' ){
-									filterTasks('project',act.result.id);
-								}else{
-									filterTasks('','');
-								}									
-							}
-					);
+
+					if( act.result.reload == true ){
+						task_filter_tree.getRootNode().reload(
+								function(){
+									if( project_form.getForm().findField("ID").getValue() == '' && act.result.id != '' ){
+										filterTasks('project',act.result.id);
+									}else{
+										filterTasks('','');
+									}									
+								}
+						);
+					}
 					
 	            },
 	            failure: function(){ 
