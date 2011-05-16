@@ -243,7 +243,8 @@ class ProjectsController extends Zend_Controller_Action
 				"DESCRIPTION" => $project->DESCRIPTION,
 				"COMMENTS" => $project->COMMENTS,												
 				"STATUS" => $project->getStatus(),				
-				"AUTO_COMPLETE" => $project->AUTO_COMPLETE
+				"AUTO_COMPLETE" => $project->AUTO_COMPLETE,
+				"CATEGORIES" => $project->categoryIdsList()
 			);
 			
 			$this->_helper->json->sendJson( array( "success" => "true", "data" => $data ) );
