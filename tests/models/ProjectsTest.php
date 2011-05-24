@@ -11,6 +11,27 @@ class ProjectsTest extends AbstractTest {
 		$this->assertEquals( 2, $cnt );								
 		
 	}			
+	
+	
+	public function testGetPagedResultsByUserId(){
+		
+		$pager = Doctrine_Core::getTable('Console_Project')->getPagedResultsByUserId(
+			$this->testUserId,
+			array(				
+				"sort" => 'DESCRIPTION',
+				"dir" => 'ASC',
+				"status" => 'active',
+				"category" => ''
+			),
+			1,
+			50			
+		);
+		
+		$projects = $pager->execute();
+		
+		$this->assertEquals( 1, count( $projects ) );
+		
+	}
 
 	
 	public function testIsActive(){
@@ -129,6 +150,27 @@ class ProjectsTest extends AbstractTest {
 	}
 	
 	
+	public function testSetCategoriesFromArray(){
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(1);
+		
+		$category2 = Doctrine_Core::getTable('Console_Category')->find(2);
+		
+		$category3 = Doctrine_Core::getTable('Console_Category')->find(3);
+		
+		$this->assertEquals( $project->hasCategory($category2), false );
+		
+		$this->assertEquals( $project->hasCategory($category2), false );
+		
+		$project->setCategoriesFromArray(array(2,3));
+		
+		$this->assertEquals( $project->hasCategory($category2), true );
+		
+		$this->assertEquals( $project->hasCategory($category2), true );
+		
+	}
+	
+	
 	public function testApplyCategory(){
 		
 		$project = Doctrine_Core::getTable('Console_Project')->find(1);
@@ -170,6 +212,21 @@ class ProjectsTest extends AbstractTest {
 		$project->applyCategory($category);
 		
 		$this->assertEquals( $project->categoryList(), 'Personal, Work' );
+		
+	}
+	
+	
+	public function testCategoryIdsList(){
+		
+		$project = Doctrine_Core::getTable('Console_Project')->find(1);
+		
+		$this->assertEquals( $project->categoryIdsList(), '1' );
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(2);
+		
+		$project->applyCategory($category);
+		
+		$this->assertEquals( $project->categoryIdsList(), '1,2' );
 		
 	}
 	
