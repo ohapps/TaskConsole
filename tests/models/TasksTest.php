@@ -27,7 +27,7 @@ class TasksTest extends AbstractTest {
 			"project" => 1,
 			"sort" => 'QUEUE_ORDER',
 			"dir" => 'ASC',
-			"status" => 'pending',
+			"status" => 'queue',
 			"priorities" => array(1,2,3)
 		);
 		
@@ -103,6 +103,19 @@ class TasksTest extends AbstractTest {
 		$this->assertEquals( 2, $cnt );
 		
 	}
+	
+	
+	public function testMarkIncomplete(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(3);
+		
+		$this->assertEquals( $task->isComplete(), 'yes' );	
+		
+		$task->markIncomplete();
+		
+		$this->assertEquals( $task->isComplete(), 'no' );
+		
+	} 
 	
 		
 }

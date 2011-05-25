@@ -44,14 +44,6 @@ class Console_ProjectCategory extends Doctrine_Record {
             )
         );	
     }
-	
-    
-    public function isUserProjectCategory($user_id){
-    	if( $this->USER_ID == $user_id ){
-    		return true;
-    	}else{
-    		return false;
-    	}
-    }
+	        
     
 }
