@@ -117,7 +117,73 @@ class TasksTest extends AbstractTest {
 		
 	} 
 	
+
+	public function testIsUserTask(){
 		
+		$task = Doctrine_Core::getTable('Console_Task')->find(5);
+		
+		$this->assertEquals( $task->isUserTask( $this->testUserId ), false );
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$this->assertEquals( $task->isUserTask( $this->testUserId ), true );
+		
+	}
+	
+	
+	public function testIsQueued(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$this->assertEquals( $task->isQueued(), true );
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(2);
+		
+		$this->assertEquals( $task->isQueued(), false );
+		
+	}
+	
+	
+	public function testAddToQueue(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(2);
+		
+		$this->assertEquals( $task->isQueued(), false );
+		
+		$task->addToQueue();
+		
+		$this->assertEquals( $task->isQueued(), true );
+		
+	}
+	
+	
+	public function testRemoveFromQueue(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$this->assertEquals( $task->isQueued(), true );
+		
+		$task->removeFromQueue();
+		
+		$this->assertEquals( $task->isQueued(), false );
+		
+	}
+	
+	
+	public function testCategoryList(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$this->assertEquals( $task->categoryList(), 'Work' );
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(2);
+		
+		$this->assertEquals( $task->categoryList(), 'Personal, Work' );
+		
+	}
+	
+	
+	
 }
 
 ?>

@@ -74,7 +74,7 @@ Console_ProjectCategory:
  ProjectCategory_1:
   ID: 1,
   Category: Category_1
-  Project: Project_1
+  Project: Project_1 
   
 Console_Task:
  Task_1:
@@ -110,6 +110,14 @@ Console_Task:
   PRIORITY_ID: 3  
   COMPLETED: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
   RECUR_UNIT_TYPE: days
+  RECUR_UNITS: 7
+ Task_5:
+  ID: 5
+  USER_ID: 2
+  DESCRIPTION: Test Demo User Task  
+  PRIORITY_ID: 3  
+  COMPLETED: '<?php echo date('Y-m-d H:i:s', time() + rand(60, 172800)) ?>'
+  RECUR_UNIT_TYPE: days
   RECUR_UNITS: 7  
 
 Console_TaskCategory:
@@ -117,6 +125,14 @@ Console_TaskCategory:
   ID: 1
   Category: Category_1
   Task: Task_1
+ TaskCategory_2:
+  ID: 2
+  Category: Category_1
+  Task: Task_2
+ TaskCategory_3:
+  ID: 3
+  Category: Category_2
+  Task: Task_2
 
 Console_Topic:
  Topic_1:
