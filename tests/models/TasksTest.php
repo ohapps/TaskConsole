@@ -183,6 +183,76 @@ class TasksTest extends AbstractTest {
 	}
 	
 	
+	public function testCategoryIdsList(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$this->assertEquals( $task->categoryIdsList(), '1' );
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(2);
+		
+		$this->assertEquals( $task->categoryIdsList(), '1,2' );
+		
+	}
+	
+	
+	public function testHasCategory(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(1);
+		
+		$this->assertEquals( $task->hasCategory($category), true );
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(2);
+		
+		$this->assertEquals( $task->hasCategory($category), false );
+		
+	}
+	
+	
+	public function testSetCategoriesFromArray(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$this->assertEquals( $task->categoryIdsList(), '1' );
+		
+		$task->setCategoriesFromArray(array(1,2));
+		
+		$this->assertEquals( $task->categoryIdsList(), '1,2' );
+				
+	}
+	
+	
+	public function testApplyCategory(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(2);
+		
+		$this->assertEquals( $task->hasCategory($category), false );
+		
+		$task->applyCategory($category);
+		
+		$this->assertEquals( $task->hasCategory($category), true );
+		
+	}
+	
+	
+	public function testRemoveCategory(){
+		
+		$task = Doctrine_Core::getTable('Console_Task')->find(1);
+		
+		$category = Doctrine_Core::getTable('Console_Category')->find(1);
+		
+		$this->assertEquals( $task->hasCategory($category), true );
+		
+		$task->removeCategory($category);
+		
+		$this->assertEquals( $task->hasCategory($category), false );
+		
+	}
+	
 	
 }
 
