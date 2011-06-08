@@ -73,7 +73,7 @@ class Oh_UserManager extends Oh_Base {
 			$this->_session->authenticated = true;
 			$this->_session->failed_attempts = 0;
 					
-			setcookie($this->config->session->namespace,$ohUser->getId(), 0, "/");
+			//setcookie($this->config->session->namespace,$ohUser->getId(), 0, "/");
 		
 		}
 		
@@ -84,7 +84,7 @@ class Oh_UserManager extends Oh_Base {
 	
 	public function logout(){				
 		Zend_Session::destroy(true);
-		setcookie($this->config->session->namespace,"", 0, "/");		
+		//setcookie($this->config->session->namespace,"", 0, "/");		
 	}
 	
 	
