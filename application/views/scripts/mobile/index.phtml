@@ -7,23 +7,23 @@ var App = new Ext.Application({
 	useLoadMask : true,	
 	launch : function () {	
 
-		TaskConsole.views.notesListToolbar = new Ext.Toolbar({
-			id: 'notesListToolbar',
-			title: 'My Notes'
+		TaskConsole.views.mainToolbar = new Ext.Toolbar({
+			id: 'mainToolbar',
+			title: 'Task Console'
 		});
 		 
-		TaskConsole.views.notesListContainer = new Ext.Panel({
-			id: 'notesListContainer',
+		TaskConsole.views.mainContainer = new Ext.Panel({
+			id: 'mainContainer',
 			layout: 'fit',
-			html: 'This is the notes list container',
-			dockedItems: [TaskConsole.views.notesListToolbar]
+			html: 'Welcome to Task Console Mobile',
+			dockedItems: [TaskConsole.views.mainToolbar]
 		});
 	
 		TaskConsole.views.viewport = new Ext.Panel({
 			fullscreen: true,			
 			layout: 'card',
 			cardAnimation: 'slide',
-			items: [TaskConsole.views.notesListContainer]
+			items: [TaskConsole.views.mainContainer]
 		});
 	
 	}	
