@@ -42,6 +42,7 @@ class MobileController extends Zend_Controller_Action {
 	
 	public function tasksAction(){
 		
+		/*
 		$user = Zend_Registry::get('user');    	
 		
 		$options = array(
@@ -63,7 +64,38 @@ class MobileController extends Zend_Controller_Action {
 		
 		$this->view->category = $this->_getParam('category');
 		$this->view->project = $this->_getParam('project');
-		$this->view->tasks = Doctrine_Core::getTable('Console_Task')->getByUserId($user->getUserId(),$options);	
+		$this->view->tasks = Doctrine_Core::getTable('Console_Task')->getByUserId($user->getUserId(),$options);
+		*/		
+		
+		$task1 = array(
+			'text' => 'test task',
+			'priority' => 'high',
+			'leaf' => true
+		);
+		
+		$task2 = array(
+			'text' => 'test task 2',
+			'priority' => 'normal',
+			'leaf' => true
+		);
+		
+		$project = array(			
+			'text' => 'test project',
+			'items' => array( $task1, $task2 )
+		);
+		
+		$data = array(
+			array( 
+				"text" => "In Queue",		
+				"items" => array( $project )
+			),
+			array( 
+				"text" => "Pending",		
+				"items" => array( $project )
+			)		
+		);
+		
+		$this->_helper->json->sendJson( array( "items" => $data ) );
 				
 	}
 	

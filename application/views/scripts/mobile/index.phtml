@@ -5,25 +5,96 @@ var App = new Ext.Application({
 	
 	name : 'TaskConsole',	
 	useLoadMask : true,	
-	launch : function () {	
+	launch : function () {			
 
 		TaskConsole.views.mainToolbar = new Ext.Toolbar({
 			id: 'mainToolbar',
-			title: 'Task Console'
+			title: 'Task Console',
+			items: 	[
+				{
+					xtype: 'button',
+					text: 'logout'
+				}
+			]
+				
 		});
-		 
-		TaskConsole.views.mainContainer = new Ext.Panel({
-			id: 'mainContainer',
-			layout: 'fit',
-			html: 'Welcome to Task Console Mobile',
-			dockedItems: [TaskConsole.views.mainToolbar]
+		
+		Ext.regModel('Task', {
+			fields: [
+						{name: 'text', type: 'string'},
+						{name: 'project', type: 'string'},
+						{name: 'priority', type: 'string'},
+						{name: 'categories', type: 'string'}
+					]
 		});
+			
+		TaskConsole.taskStore = new Ext.data.TreeStore({
+			model: 'Task',			
+			proxy: {
+				type: 'ajax',
+				url: '<?= $this->baseUrl(); ?>/mobile/tasks',
+			    reader: {
+			    	type: 'tree',
+			        root: 'items'
+			    }
+			}
+		});
+
+		
+			
+		TaskConsole.taskList = new Ext.NestedList({
+			fullscreen: true,
+			title: 'Tasks',
+			displayField: 'text',
+			store: TaskConsole.taskStore,
+			getDetailCard: function(item,parent){
+			 	var itemData = item.attributes.record.data,
+		        parentData = parent.attributes.record.data,
+				detailCard = new Ext.Panel({
+					scroll: 'vertical',
+					styleHtmlContent: true,
+					tpl: ["<h2>{text}</h2>","{priority}"]
+				});
+			 	detailCard.update(itemData);
+		        this.backButton.setText(parentData.text);
+				return detailCard;
+			}
+		});
+		
 	
-		TaskConsole.views.viewport = new Ext.Panel({
+		TaskConsole.views.viewport = new Ext.TabPanel({
 			fullscreen: true,			
 			layout: 'card',
 			cardAnimation: 'slide',
-			items: [TaskConsole.views.mainContainer]
+			tabBar: {
+		        dock: 'bottom',
+		        ui: 'light',
+		        layout: {
+		            pack: 'center'
+		        }
+		    },
+			dockedItems: [ TaskConsole.views.mainToolbar ],
+			items: [
+				{
+			        title: 'Tasks',
+			        badgeText: '2',
+			        items: TaskConsole.taskList,		        
+			        iconCls: 'action',
+			        cls: 'card card5'
+			    },
+			    {
+			        title: 'Projects',
+			        html: 'projects',
+			        iconCls: 'organize',
+			        cls: 'card card4'
+			    },
+			    {
+			        title: 'Notes',
+			        html: 'notes',
+			        iconCls: 'compose',
+			        cls: 'card card3'
+			    }
+			]
 		});
 	
 	}	
