@@ -21,27 +21,39 @@ var App = new Ext.Application({
 		
 		Ext.regModel('Task', {
 			fields: [
-						{name: 'text', type: 'string'},
-						{name: 'project', type: 'string'},
-						{name: 'priority', type: 'string'},
-						{name: 'categories', type: 'string'}
+						{name: 'DESCRIPTION', type: 'string'},
+						{name: 'PROJECT', type: 'string'},
+						{name: 'PRIORITY', type: 'string'},
+						{name: 'CATEGORIES', type: 'string'}
 					]
 		});
 			
-		TaskConsole.taskStore = new Ext.data.TreeStore({
-			model: 'Task',			
+		TaskConsole.taskQueueStore = new Ext.data.Store({
+			model: 'Task',
+			getGroupString : function(record) {
+		        return record.get('PRIORITY');
+		    },			
 			proxy: {
 				type: 'ajax',
-				url: '<?= $this->baseUrl(); ?>/mobile/tasks',
+				url: '<?= $this->baseUrl(); ?>/tasks/user-tasks/status/queue',
+				extraParams: { start: 0, limit: 50, priorities: "1,2,3"  },
 			    reader: {
-			    	type: 'tree',
-			        root: 'items'
+			    	type: 'json',
+			        root: 'data'
 			    }
-			}
+			},
+		    autoLoad: true
+		});
+
+		TaskConsole.taskQueueList = new Ext.List({
+		    fullscreen: true,		    
+		    itemTpl : '<div>Project: {PROJECT}</div>{DESCRIPTION}',
+		    grouped : true,		    		    
+		    store: TaskConsole.taskQueueStore
 		});
 
 		
-			
+		/*	
 		TaskConsole.taskList = new Ext.NestedList({
 			fullscreen: true,
 			title: 'Tasks',
@@ -60,7 +72,23 @@ var App = new Ext.Application({
 				return detailCard;
 			}
 		});
-		
+		*/
+
+		TaskConsole.views.taskTabs = new Ext.TabPanel({
+
+			fullscreen: true,
+			ui: 'light',
+			items: [
+				{
+					title: "Queue",
+					items: TaskConsole.taskQueueList
+				},{
+					title: "Pending",
+					html: "pending"
+				}
+			]
+										
+		});		
 	
 		TaskConsole.views.viewport = new Ext.TabPanel({
 			fullscreen: true,			
@@ -78,7 +106,7 @@ var App = new Ext.Application({
 				{
 			        title: 'Tasks',
 			        badgeText: '2',
-			        items: TaskConsole.taskList,		        
+			        items: TaskConsole.views.taskTabs,		        
 			        iconCls: 'action',
 			        cls: 'card card5'
 			    },
