@@ -1,14 +1,6 @@
 <?php
 
-class TestConfiguration {		
-	
-	
-	static function setupUser(){
-		
-		$userManager = Zend_Registry::get('userManager');
-		$userManager->login( 'demo' );
-		
-	}
+class TestConfiguration {					
 	
 	
 	static function setupDatabase(){

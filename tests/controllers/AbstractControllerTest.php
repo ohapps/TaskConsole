@@ -25,9 +25,24 @@ abstract class AbstractControllerTest extends Zend_Test_PHPUnit_ControllerTestCa
 	    parent::setUp();
 	    
 	    TestConfiguration::setupDatabase();
-	    TestConfiguration::setupUser();
 	    
 	    
+	}
+	
+	
+	public function login(){
+		
+		$this->request->setMethod('POST')->setPost(
+			array(
+				'un' => 'demo',
+				'ps' => 'demo'
+				)
+		);
+		$this->dispatch('/user/auth');
+        $this->assertController('user');
+        $this->assertAction('auth');
+        $this->assertContains('"success":true', $this->getResponse()->getBody());
+		
 	}
 	
 		

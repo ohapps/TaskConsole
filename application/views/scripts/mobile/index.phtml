@@ -32,11 +32,13 @@ var App = new Ext.Application({
 			model: 'Task',
 			getGroupString : function(record) {
 		        return record.get('PRIORITY');
-		    },			
+		    },
+		    pageSize: 5,
+		    clearOnPageLoad: false,			
 			proxy: {
 				type: 'ajax',
 				url: '<?= $this->baseUrl(); ?>/tasks/user-tasks/status/queue',
-				extraParams: { start: 0, limit: 50, priorities: "1,2,3"  },
+				extraParams: { start: 0, limit: 5, priorities: "1,2,3"  },
 			    reader: {
 			    	type: 'json',
 			        root: 'data'
@@ -47,11 +49,42 @@ var App = new Ext.Application({
 
 		TaskConsole.taskQueueList = new Ext.List({
 		    fullscreen: true,		    
-		    itemTpl : '<div>Project: {PROJECT}</div>{DESCRIPTION}',
+		    itemTpl : '<div style="font-weight: bold;">{PROJECT}</div>{DESCRIPTION}',
 		    grouped : true,		    		    
-		    store: TaskConsole.taskQueueStore
+		    store: TaskConsole.taskQueueStore,
+		    plugins: [
+		  		{
+                	ptype: 'listpaging',
+                	autoPaging: false
+            	}, {
+                	ptype: 'pullrefresh'
+            	}
+            ]
 		});
 
+		TaskConsole.taskPendingStore = new Ext.data.Store({
+			model: 'Task',
+			getGroupString : function(record) {
+		        return record.get('PRIORITY');
+		    },			
+			proxy: {
+				type: 'ajax',
+				url: '<?= $this->baseUrl(); ?>/tasks/user-tasks/status/pending',
+				extraParams: { start: 0, limit: 50, priorities: "1,2,3"  },
+			    reader: {
+			    	type: 'json',
+			        root: 'data'
+			    }
+			},
+		    autoLoad: true
+		});
+
+		TaskConsole.taskPendingList = new Ext.List({
+		    fullscreen: true,		    
+		    itemTpl : '<div style="font-weight: bold;">{PROJECT}</div>{DESCRIPTION}',
+		    grouped : true,		    		    
+		    store: TaskConsole.taskPendingStore
+		});
 		
 		/*	
 		TaskConsole.taskList = new Ext.NestedList({
@@ -84,7 +117,7 @@ var App = new Ext.Application({
 					items: TaskConsole.taskQueueList
 				},{
 					title: "Pending",
-					html: "pending"
+					items: TaskConsole.taskPendingList
 				}
 			]
 										
@@ -109,13 +142,7 @@ var App = new Ext.Application({
 			        items: TaskConsole.views.taskTabs,		        
 			        iconCls: 'action',
 			        cls: 'card card5'
-			    },
-			    {
-			        title: 'Projects',
-			        html: 'projects',
-			        iconCls: 'organize',
-			        cls: 'card card4'
-			    },
+			    },			    
 			    {
 			        title: 'Notes',
 			        html: 'notes',

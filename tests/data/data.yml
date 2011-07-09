@@ -1,18 +1,18 @@
 Console_User:
  User_1:
   ID: 1
-  FIRST_NAME: Craig
-  LAST_NAME: Hausner
-  USERNAME: housedaddy
-  PASSWORD: bc78c173621fc78a2101ea6a11da2a0f
+  FIRST_NAME: demo
+  LAST_NAME: user
+  USERNAME: demo
+  PASSWORD: fe01ce2a7fbac8fafaed7c982a04e229
   ACTIVE: 1
   CREATED: 2008-02-28 00:00:00
  User_2:
   ID: 2
-  FIRST_NAME: Demo
-  LAST_NAME: User
-  USERNAME: demo
-  PASSWORD: bc78c173621fc78a2101ea6a11da2a0f
+  FIRST_NAME: demo
+  LAST_NAME: user
+  USERNAME: demotest
+  PASSWORD: fe01ce2a7fbac8fafaed7c982a04e229
   ACTIVE: 1
   CREATED: 2008-02-28 00:00:00
   
