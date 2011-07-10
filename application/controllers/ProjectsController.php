@@ -24,29 +24,7 @@ class ProjectsController extends Zend_Controller_Action
 			$this->_redirect("/user/login");		
 		}		
 		
-	}
-	
-	
-	/***************************************
-	* LOAD VIEW SCRIPTS
-	****************************************/	
-	
-	/**
-	* default action that directs to the main project screen
-	*/	 
-	public function indexAction() 
-    {
-     	
-    	$user = Zend_Registry::get('user');
-    	$gdata = new Oh_Gdata( $user->getUserId() );
-     	   
-	    if( $gdata->isConnected()== true ){
-			$this->view->gdata_enabled = true;
-		}else{
-			$this->view->gdata_enabled = false;
-		}
-     	   
-    }
+	}			
     
 	
 	/***************************************
