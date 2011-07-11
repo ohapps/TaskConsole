@@ -2,16 +2,7 @@
 
 require_once 'AbstractControllerTest.php';
 
-class ProjectsControllerTest extends AbstractControllerTest {						
-	
-	
-	public function testIndexAction(){
-        
-		$this->dispatch('/projects');
-        $this->assertController('projects');
-        $this->assertAction('index');
-                
-    }   
+class ProjectsControllerTest extends AbstractControllerTest {									   
     
     
 	public function testSavecatAction(){
