@@ -5,17 +5,15 @@ require_once 'AbstractControllerTest.php';
 class ProjectsControllerTest extends AbstractControllerTest {									   
     
     
-	public function testSavecatAction(){
-
-		$this->login();
-		
+	public function testSavecatAction(){				
 		
 		$this->request->setMethod('POST')->setPost(array('ID' => '1','DESCRIPTION' => 'test'));
 		$this->dispatch('/projects/savecat');
         $this->assertController('projects');
         $this->assertAction('savecat');        
-        $this->assertContains('"success":true', $this->getResponse()->getBody());        
-        /*
+        $this->assertContains('"success":true', $this->getResponse()->getBody());
+                
+        
 		$this->resetRequest()->resetResponse();
 		$this->request->setMethod('POST')->setPost(array('ID' => '0','DESCRIPTION' => 'test'));
 		$this->dispatch('/projects/savecat');
@@ -33,12 +31,11 @@ class ProjectsControllerTest extends AbstractControllerTest {
 		$this->dispatch('/projects/savecat');
         $this->assertController('projects');
         $this->assertAction('savecat');
-        $this->assertContains('"success":true', $this->getResponse()->getBody());
-        */        
+        $this->assertContains('"success":true', $this->getResponse()->getBody());                
                 
     }
     
-    /*	        
+    	        
 	public function testDeletecatAction(){
         
 		$this->request->setMethod('POST')->setPost(array('ID' => '1'));
@@ -55,7 +52,7 @@ class ProjectsControllerTest extends AbstractControllerTest {
         $this->assertContains('"success":false', $this->getResponse()->getBody());                               
         
         $this->resetRequest()->resetResponse();
-		$this->request->setMethod('POST')->setPost(array('ID' => '4'));
+		$this->request->setMethod('POST')->setPost(array('ID' => '5'));
 		$this->dispatch('/projects/deletecat');
         $this->assertController('projects');
         $this->assertAction('deletecat');
@@ -63,7 +60,7 @@ class ProjectsControllerTest extends AbstractControllerTest {
                 
     }
     
-    
+    /*
 	public function testSaveprojectAction(){
         
 		// successful update
