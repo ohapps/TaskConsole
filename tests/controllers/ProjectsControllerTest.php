@@ -12,14 +12,20 @@ class ProjectsControllerTest extends AbstractControllerTest {
         $this->assertController('projects');
         $this->assertAction('savecat');        
         $this->assertContains('"success":true', $this->getResponse()->getBody());
-                
-        
+                        
 		$this->resetRequest()->resetResponse();
 		$this->request->setMethod('POST')->setPost(array('ID' => '0','DESCRIPTION' => 'test'));
 		$this->dispatch('/projects/savecat');
         $this->assertController('projects');
         $this->assertAction('savecat');
         $this->assertContains('"success":false', $this->getResponse()->getBody());        
+        
+        $this->resetRequest()->resetResponse();
+		$this->request->setMethod('POST')->setPost(array('ID' => '5','DESCRIPTION' => 'test'));
+		$this->dispatch('/projects/savecat');
+        $this->assertController('projects');
+        $this->assertAction('savecat');
+        $this->assertContains('"success":false', $this->getResponse()->getBody());
         
         $this->resetRequest()->resetResponse();
 		$this->request->setMethod('POST')->setPost(
@@ -60,7 +66,7 @@ class ProjectsControllerTest extends AbstractControllerTest {
                 
     }
     
-    /*
+    
 	public function testSaveprojectAction(){
         
 		// successful update
@@ -69,8 +75,9 @@ class ProjectsControllerTest extends AbstractControllerTest {
 				'ID' => '1',
 				'DESCRIPTION' => 'Test',
 				'COMMENTS' => 'test',
-				'CATEGORY' => '1',
-				'COMPLETE' => '0'
+				'AUTO_COMPLETE' => '1',
+				'STATUS' => 'complete',
+				'CATEGORIES' => '1,2'
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -85,8 +92,9 @@ class ProjectsControllerTest extends AbstractControllerTest {
 				'ID' => '',
 				'DESCRIPTION' => 'Test',
 				'COMMENTS' => 'test',
-				'CATEGORY' => '1',
-				'COMPLETE' => '0'
+				'AUTO_COMPLETE' => '1',
+				'STATUS' => 'active',
+				'CATEGORIES' => '1'								
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -99,10 +107,11 @@ class ProjectsControllerTest extends AbstractControllerTest {
         $this->request->setMethod('POST')->setPost(
 			array(
 				'ID' => '',
-				'DESCRIPTION' => 'Test error',
+				'DESCRIPTION' => 'Test',
 				'COMMENTS' => 'test',
-				'CATEGORY' => '9',
-				'COMPLETE' => '0'
+				'AUTO_COMPLETE' => '1',
+				'STATUS' => 'active',
+				'CATEGORIES' => '9'								
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -114,11 +123,12 @@ class ProjectsControllerTest extends AbstractControllerTest {
         $this->resetRequest()->resetResponse();
         $this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '',
-				'DESCRIPTION' => 'Test error',
+				'ID' => '5',
+				'DESCRIPTION' => 'Test',
 				'COMMENTS' => 'test',
-				'CATEGORY' => '4',
-				'COMPLETE' => '0'
+				'AUTO_COMPLETE' => '1',
+				'STATUS' => 'active',
+				'CATEGORIES' => '1'								
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -130,11 +140,12 @@ class ProjectsControllerTest extends AbstractControllerTest {
         $this->resetRequest()->resetResponse();
         $this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '6',
-				'DESCRIPTION' => 'Test error',
+				'ID' => '20',
+				'DESCRIPTION' => 'Test',
 				'COMMENTS' => 'test',
-				'CATEGORY' => '1',
-				'COMPLETE' => '0'
+				'AUTO_COMPLETE' => '1',
+				'STATUS' => 'active',
+				'CATEGORIES' => '1'								
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -144,47 +155,47 @@ class ProjectsControllerTest extends AbstractControllerTest {
         
     }
     
-    
+        
     public function testDeleteprojectAction(){
     	
     	// successful delete
         $this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '1'
+				'id' => '1'
 			)
 		);
-		$this->dispatch('/projects/deleteproject');
+		$this->dispatch('/projects/delete-project');
         $this->assertController('projects');
-        $this->assertAction('deleteproject');        
+        $this->assertAction('delete-project');        
         $this->assertContains('"success":true', $this->getResponse()->getBody());
         
         // fail deleting another users project
         $this->resetRequest()->resetResponse();
         $this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '4'
+				'id' => '5'
 			)
 		);
-		$this->dispatch('/projects/deleteproject');
+		$this->dispatch('/projects/delete-project');
         $this->assertController('projects');
-        $this->assertAction('deleteproject');        
+        $this->assertAction('delete-project');        
         $this->assertContains('"success":false', $this->getResponse()->getBody());
     	
         // fail invalid project id
         $this->resetRequest()->resetResponse();
         $this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '5'
+				'id' => '20'
 			)
 		);
-		$this->dispatch('/projects/deleteproject');
+		$this->dispatch('/projects/delete-project');
         $this->assertController('projects');
-        $this->assertAction('deleteproject');        
+        $this->assertAction('delete-project');        
         $this->assertContains('"success":false', $this->getResponse()->getBody());
         
     }
     
-    
+    /*
     public function testSavetaskAction(){
     	
     	$today = new Zend_Date();
