@@ -49,7 +49,9 @@ class TasksController extends Zend_Controller_Action {
     		$task->PROJECT_ID = $this->_getParam('PROJECT_ID');
     		$task->DUE_DATE = $this->_getParam('DUE_DATE');
     		$task->RECUR_UNIT_TYPE = $this->_getParam('RECUR_UNIT_TYPE');
-    		$task->RECUR_UNITS = $this->_getParam('RECUR_UNITS');    		
+    		$task->RECUR_UNITS = $this->_getParam('RECUR_UNITS');
+
+    		
     		
     		try{    			    				
     			

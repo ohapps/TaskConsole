@@ -133,7 +133,7 @@ class ProjectsController extends Zend_Controller_Action
     		}
     		
     		$project->DESCRIPTION = $this->_getParam('DESCRIPTION');
-    		$project->COMMENTS = $this->_getParam('COMMENTS');    		
+    		$project->COMMENTS = $this->_getParam('COMMENTS');
     		$project->AUTO_COMPLETE = $this->_getParam('AUTO_COMPLETE');
     		$project->save();
     		
