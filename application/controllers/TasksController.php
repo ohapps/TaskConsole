@@ -33,26 +33,48 @@ class TasksController extends Zend_Controller_Action {
     		
     		if( $this->_getParam('ID') != "" ){
     			
-    			$task = Doctrine_Core::getTable('Console_Task')->find($this->_getParam('ID'));
+    			$task = Doctrine_Core::getTable('Console_Task')->find($this->_getParam('ID'));    			    			
     			
     			if( $task == false ){
     				throw new Exception('invalid task id');
     			}
     			
+    			if( $task->isUserTask($user->getUserId()) == false ){    			
+	    			throw new Exception('task does not belong to current user');
+	    		}
+    			
     		}else{
     			$task = new Console_Task();    			
     		}
     		
+    		
+    		if( $this->_getParam('PROJECT_ID') != null && $this->_getParam('PROJECT_ID') != '' ){
+    		
+    			$project = Doctrine_Core::getTable('Console_Project')->find($this->_getParam('PROJECT_ID'));
+    			
+	    		if( $project == false ){
+	    			throw new Exception('invalid project id');
+	    		}
+	    		
+	    		if( $project->isUserProject($user->getUserId()) === false ){
+	    			throw new Exception('project does not belong to current user');
+	    		}
+	    		
+	    		$task->PROJECT_ID = $this->_getParam('PROJECT_ID');
+	    		
+    		}else{
+    			
+    			$task->PROJECT_ID = null;
+    			
+    		}
+    		
     		$task->USER_ID = $user->getUserId();
     		$task->DESCRIPTION = $this->_getParam('DESCRIPTION');
-    		$task->PRIORITY_ID = $this->_getParam('PRIORITY_ID');    		
-    		$task->PROJECT_ID = $this->_getParam('PROJECT_ID');
+    		$task->PRIORITY_ID = $this->_getParam('PRIORITY_ID');    		    		
     		$task->DUE_DATE = $this->_getParam('DUE_DATE');
     		$task->RECUR_UNIT_TYPE = $this->_getParam('RECUR_UNIT_TYPE');
     		$task->RECUR_UNITS = $this->_getParam('RECUR_UNITS');
-
-    		
-    		
+    		    		
     		try{    			    				
     			
     			$task->save();    			    			
