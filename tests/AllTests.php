@@ -9,12 +9,12 @@ require_once dirname(__FILE__) . '/models/CategoriesTest.php';
 require_once dirname(__FILE__) . '/models/TasksTest.php';
 require_once dirname(__FILE__) . '/models/TopicsTest.php';
 
-/*
 require_once dirname(__FILE__) . '/controllers/IndexControllerTest.php';
 require_once dirname(__FILE__) . '/controllers/MobileControllerTest.php';
 require_once dirname(__FILE__) . '/controllers/NotesControllerTest.php';
 require_once dirname(__FILE__) . '/controllers/ProjectsControllerTest.php';
-*/
+require_once dirname(__FILE__) . '/controllers/TasksControllerTest.php';
+require_once dirname(__FILE__) . '/controllers/UserControllerTest.php';
 
 
 class AllTests{
@@ -34,13 +34,13 @@ class AllTests{
 		$suite->addTestSuite('TasksTest');
 		$suite->addTestSuite('TopicsTest');
 		
-		// CONTROLLERS
-		/*
+		// CONTROLLERS		
 		$suite->addTestSuite('IndexControllerTest');
 		$suite->addTestSuite('MobileControllerTest');
 		$suite->addTestSuite('NotesControllerTest');
 		$suite->addTestSuite('ProjectsControllerTest');
-		*/
+		$suite->addTestSuite('TasksControllerTest');
+		$suite->addTestSuite('UserControllerTest');
 		
 		return $suite;
 		

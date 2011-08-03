@@ -123,7 +123,7 @@ class ProjectsControllerTest extends AbstractControllerTest {
         $this->resetRequest()->resetResponse();
         $this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '5',
+				'ID' => '3',
 				'DESCRIPTION' => 'Test',
 				'COMMENTS' => 'test',
 				'AUTO_COMPLETE' => '1',

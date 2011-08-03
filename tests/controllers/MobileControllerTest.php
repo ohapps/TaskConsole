@@ -13,7 +13,7 @@ class MobileControllerTest extends AbstractControllerTest {
 		
 	}
 	
-	
+	/*
 	public function testProjectsAction(){
 		
 		$this->dispatch('/mobile/projects');
@@ -202,6 +202,6 @@ class MobileControllerTest extends AbstractControllerTest {
         $this->assertAction('error');
 		
 	}
-	
+	*/
 	
 }

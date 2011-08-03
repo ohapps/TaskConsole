@@ -39,7 +39,7 @@ class NotesControllerTest extends AbstractControllerTest {
     public function testViewWithInvalidIdAction(){
     	
     	$this->resetRequest()->resetResponse();
-		$this->request->setMethod('POST')->setPost(array('id' => '6'));
+		$this->request->setMethod('POST')->setPost(array('id' => '0'));
 		$this->dispatch('/notes/view');
         $this->assertController('error');
         $this->assertAction('error');
@@ -76,7 +76,7 @@ class NotesControllerTest extends AbstractControllerTest {
         $this->resetRequest()->resetResponse();
 		$this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '6',
+				'ID' => '0',
 				'DESCRIPTION' => 'test'				
 			)
 		);
@@ -116,7 +116,7 @@ class NotesControllerTest extends AbstractControllerTest {
         $this->resetRequest()->resetResponse();
 		$this->request->setMethod('POST')->setPost(
 			array(
-				'ID' => '6'				
+				'ID' => '0'				
 			)
 		);
 		$this->dispatch('/notes/delete-topic');
@@ -201,7 +201,7 @@ class NotesControllerTest extends AbstractControllerTest {
 		$this->request->setMethod('POST')->setPost(
 			array( 'DATA' =>
 				array(
-					'ID' => '6',
+					'ID' => '0',
 					'TOPIC_ID' => '1',
 					'CONTENTS' => 'test',
 					'DESCRIPTION' => 'test'				
@@ -261,7 +261,7 @@ class NotesControllerTest extends AbstractControllerTest {
     	
     	$this->resetRequest()->resetResponse();
 		$this->request->setMethod('POST')->setPost(
-			array( 'id' => '6' )
+			array( 'id' => '0' )
 		);
 		$this->dispatch('/notes/delete');
         $this->assertController('error');
@@ -338,7 +338,7 @@ class NotesControllerTest extends AbstractControllerTest {
         
         $this->resetRequest()->resetResponse();
 		$this->request->setMethod('POST')->setPost(
-			array('id' => 6)
+			array('id' => 0)
 		);
 		$this->dispatch('/notes/load-note');
         $this->assertController('notes');
@@ -363,18 +363,7 @@ class NotesControllerTest extends AbstractControllerTest {
         $this->assertAction('load-note');
         $this->assertContains('"success":false', $this->getResponse()->getBody());
     	
-    }
-    
-    
-    public function testRecentlyViewedAction(){
-    	
-    	$this->resetRequest()->resetResponse();		
-		$this->dispatch('/notes/recently-viewed');
-        $this->assertController('notes');
-        $this->assertAction('recently-viewed');
-        $this->assertContains('"ID":"2"', $this->getResponse()->getBody());
-    	
-    }
+    }            
     
     
 }

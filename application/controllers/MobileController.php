@@ -31,7 +31,7 @@ class MobileController extends Zend_Controller_Action {
 							
 	}
 	
-	
+	/*
 	public function projectsAction(){
 		
 		$user = Zend_Registry::get('user');
@@ -42,7 +42,7 @@ class MobileController extends Zend_Controller_Action {
 	
 	public function tasksAction(){
 		
-		/*
+		
 		$user = Zend_Registry::get('user');    	
 		
 		$options = array(
@@ -65,7 +65,7 @@ class MobileController extends Zend_Controller_Action {
 		$this->view->category = $this->_getParam('category');
 		$this->view->project = $this->_getParam('project');
 		$this->view->tasks = Doctrine_Core::getTable('Console_Task')->getByUserId($user->getUserId(),$options);
-		*/		
+				
 		
 		$task1 = array(
 			'text' => 'test task',
@@ -165,6 +165,6 @@ class MobileController extends Zend_Controller_Action {
 		$this->view->note = $note;
 		
 	}
-		
+	*/	
 	
 }

@@ -73,6 +73,36 @@ class UserController extends Zend_Controller_Action {
 	}
 	
 	
+	public function authAction(){		
+		
+		$userManager = Zend_Registry::get('userManager');
+		
+		if( $userManager->loggedIn() === false ){
+			$userManager->auth( $this->_getParam("un"), $this->_getParam("ps") );			
+		}			
+		
+		$auth = $userManager->loggedIn();
+		
+		if( $this->_helper->mobile->isMobile() === true ){ 
+				
+				$this->_helper->layout()->disableLayout();
+				$this->_helper->viewRenderer->setNoRender();
+				$this->render('iphone-login');
+
+				if( $auth == true ){
+					$this->_redirect( $this->_getParam('success_url') );
+				}else{										
+					$this->_redirect( "/user/login?failed=true&rtn_url=" . $this->_getParam('success_url') );
+				}
+				
+		}else{			
+				$this->_helper->json->sendJson( array("success" => $auth ) );				
+		}	
+		
+	}
+	
+	
+	/*
 	public function profileAction(){
 		
 		$user = Zend_Registry::get('user');		
@@ -144,37 +174,9 @@ class UserController extends Zend_Controller_Action {
 		}
 		
 	}
+	*/
 	
-	
-	public function authAction(){		
-		
-		$userManager = Zend_Registry::get('userManager');
-		
-		if( $userManager->loggedIn() === false ){
-			$userManager->auth( $this->_getParam("un"), $this->_getParam("ps") );			
-		}			
-		
-		$auth = $userManager->loggedIn();
-		
-		if( $this->_helper->mobile->isMobile() === true ){ 
-				
-				$this->_helper->layout()->disableLayout();
-				$this->_helper->viewRenderer->setNoRender();
-				$this->render('iphone-login');
-
-				if( $auth == true ){
-					$this->_redirect( $this->_getParam('success_url') );
-				}else{										
-					$this->_redirect( "/user/login?failed=true&rtn_url=" . $this->_getParam('success_url') );
-				}
-				
-		}else{			
-				$this->_helper->json->sendJson( array("success" => $auth ) );				
-		}	
-		
-	}
-	
-	
+			
 } 
 
 
