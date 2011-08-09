@@ -102,6 +102,14 @@ class UserController extends Zend_Controller_Action {
 	}
 	
 	
+	public function statusAction(){
+		
+		$userManager = Zend_Registry::get('userManager');
+		$this->_helper->json->sendJson( array("success" => $userManager->loggedIn() ) );
+		
+	}
+	
+	
 	/*
 	public function profileAction(){
 		
