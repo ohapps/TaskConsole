@@ -2104,31 +2104,28 @@ Ext.onReady(function() {
 	<?php if( isset( $this->user ) ){ ?>
   	
 		<?php if( $this->user != false ){ ?>
-				  	
-	  	​var checkLoginStatus = {
-        	run: function(){
 
-            	Ext.Ajax.request({
-                	url: "<?= $this->baseUrl(); ?>/user/status",                                
-                    success: function(resp){                                    
-
-                     	data = Ext.decode( resp.responseText );
-                        
-                        if( data.success == false ){
-                        	document.location.href="<?= $this->baseUrl(); ?>/user/logout";
-                        }
-                                                                                                                                                                 
-                    },
-                   	failure: function(){
-                             
-                    }
-              	});    
-                
-           	},
-            interval: 300000	            
-        }
-        	        
-      	Ext.TaskMgr.start(checkLoginStatus);		
+		var task = {
+			run: function(){
+				Ext.Ajax.request({
+	            	url: "<?= $this->baseUrl(); ?>/user/status",                                
+	                success: function(resp){                                    
+	
+	                 	data = Ext.decode( resp.responseText );
+	                    
+	                    if( data.success == false ){
+	                    	document.location.href="<?= $this->baseUrl(); ?>/user/logout";
+	                    }
+	                                                                                                                                                             
+	                },
+	               	failure: function(){
+	                         
+	                }
+	          	});
+			},
+			interval: 300000
+		}
+		Ext.TaskMgr.start(task);						
 		
 		<?php } ?>
 		
