@@ -285,18 +285,85 @@ var task_queue_pagingbar = new Ext.PagingToolbar({
     emptyMsg: "No tasks to display"
 });
 
-var category_queue_combo = new Ext.form.ComboBox({ 
-	hideLabel: true, 	 
-	width: 200,	 
-	store: category_store, 
-	valueField: "ID", 
-	displayField: "DESCRIPTION", 
-	typeAhead: true, 
-	mode: "local", 
-	triggerAction: "all", 
-	emptyText: "select category to apply / remove", 
-	selectOnFocus: true, 
-	editable: false
+var task_queue_action_menu = new Ext.menu.Menu({
+    items:     [
+                	{
+                    	text: "Apply Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/add.png",                    
+                    	menu:[
+                    	      	{
+                        	      	xtype: "combo",
+                        	      	hideLabel: true, 	 
+                        	    	width: 200,	 
+                        	    	store: category_store, 
+                        	    	valueField: "ID", 
+                        	    	displayField: "DESCRIPTION", 
+                        	    	typeAhead: true, 
+                        	    	mode: "local", 
+                        	    	triggerAction: "all", 
+                        	    	emptyText: "", 
+                        	    	selectOnFocus: true, 
+                        	    	editable: false
+                        	    	/*									
+                        	    	,
+                        	    	​listeners: {
+                        	    		
+                        	            select: {
+                        	               fn: function(combo, value){                        	                    
+												
+                        	                    if( combo.getValue() != '' ){
+                        	                    	//applyCategory(combo.getValue(),task_queue_grid);
+                        	               			combo.setValue('');
+                        	               		}else{
+                        	               			Ext.Msg.alert("Error", "Please select a category to apply.");
+                        	               		}
+                        	                                                                             
+                        	               }
+                        	            }
+                	            		
+                        	         }
+                        	    	*/
+                    	      	}								
+                          	]
+                   	},{
+                    	text: "Remove Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/delete.png",                    
+                    	menu:[
+								{
+                        	      	xtype: "combo",
+                        	      	hideLabel: true, 	 
+                        	    	width: 200,	 
+                        	    	store: category_store, 
+                        	    	valueField: "ID", 
+                        	    	displayField: "DESCRIPTION", 
+                        	    	typeAhead: true, 
+                        	    	mode: "local", 
+                        	    	triggerAction: "all", 
+                        	    	emptyText: "", 
+                        	    	selectOnFocus: true, 
+                        	    	editable: false
+                        	    	/*
+                        	    	,
+                        	    	​listeners: {
+                        	            select: {
+                        	               fn: function(combo, value){                        	                    
+
+                        	                    if( combo.getValue() != '' ){
+                        	                    	removeCategory(combo.getValue(),task_queue_grid);
+                        	               			combo.setValue('');
+                        	               		}else{
+                        	               			Ext.Msg.alert("Error", "Please select a category to remove.");
+                        	               		}
+                        	                                                                             
+                        	               }
+                        	            }
+                        	         }
+                       	         	*/
+                    	      	}
+                          	]
+                   	}
+					
+            ]    
 });
 
 var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
@@ -361,36 +428,13 @@ var task_queue_grid = new Ext.ux.EasyEditorGridPanel({
                		});
                 	
                	}
-          	},
+          	},          	
           	'-',
-          	category_queue_combo,
           	{
-           		text: "Apply",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
-               	handler : function(){
-
-               		if( category_queue_combo.getValue() != '' ){
-               			applyCategory(category_queue_combo.getValue(),task_queue_grid);
-               			category_queue_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to apply.");
-               		}
-                	
-               	}
-          	},{
-           		text: "Remove",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
-               	handler : function(){
-
-               		if( category_queue_combo.getValue() != '' ){
-               			removeCategory(category_queue_combo.getValue(),task_queue_grid);
-               			category_queue_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to remove.");
-               		}
-                	
-               	}
-          	}                                       
+                text: "More Actions",
+                icon: "<?= $this->baseUrl() ?>/html/images/cog.png",
+                menu: task_queue_action_menu
+            }          	                                      
        	],
 	bbar: task_queue_pagingbar 	    
 
