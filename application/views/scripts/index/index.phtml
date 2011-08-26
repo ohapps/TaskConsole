@@ -285,81 +285,36 @@ var task_queue_pagingbar = new Ext.PagingToolbar({
     emptyMsg: "No tasks to display"
 });
 
+
 var task_queue_action_menu = new Ext.menu.Menu({
     items:     [
                 	{
                     	text: "Apply Category",
                     	icon: "<?= $this->baseUrl() ?>/html/images/add.png",                    
-                    	menu:[
-                    	      	{
-                        	      	xtype: "combo",
-                        	      	hideLabel: true, 	 
-                        	    	width: 200,	 
-                        	    	store: category_store, 
-                        	    	valueField: "ID", 
-                        	    	displayField: "DESCRIPTION", 
-                        	    	typeAhead: true, 
-                        	    	mode: "local", 
-                        	    	triggerAction: "all", 
-                        	    	emptyText: "", 
-                        	    	selectOnFocus: true, 
-                        	    	editable: false
-                        	    	/*									
-                        	    	,
-                        	    	​listeners: {
-                        	    		
-                        	            select: {
-                        	               fn: function(combo, value){                        	                    
-												
-                        	                    if( combo.getValue() != '' ){
-                        	                    	//applyCategory(combo.getValue(),task_queue_grid);
-                        	               			combo.setValue('');
-                        	               		}else{
-                        	               			Ext.Msg.alert("Error", "Please select a category to apply.");
-                        	               		}
-                        	                                                                             
-                        	               }
-                        	            }
-                	            		
-                        	         }
-                        	    	*/
-                    	      	}								
-                          	]
+                    	menu:	[
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+							           	  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+							           	  	handler : function(){						             	  							           	  		
+							           	  		applyCategory(<?= $cat->ID ?>,task_queue_grid);
+							           	  	}
+							           	}
+							           	<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+						           	<?php } ?>								
+                          		]
                    	},{
                     	text: "Remove Category",
                     	icon: "<?= $this->baseUrl() ?>/html/images/delete.png",                    
                     	menu:[
-								{
-                        	      	xtype: "combo",
-                        	      	hideLabel: true, 	 
-                        	    	width: 200,	 
-                        	    	store: category_store, 
-                        	    	valueField: "ID", 
-                        	    	displayField: "DESCRIPTION", 
-                        	    	typeAhead: true, 
-                        	    	mode: "local", 
-                        	    	triggerAction: "all", 
-                        	    	emptyText: "", 
-                        	    	selectOnFocus: true, 
-                        	    	editable: false
-                        	    	/*
-                        	    	,
-                        	    	​listeners: {
-                        	            select: {
-                        	               fn: function(combo, value){                        	                    
-
-                        	                    if( combo.getValue() != '' ){
-                        	                    	removeCategory(combo.getValue(),task_queue_grid);
-                        	               			combo.setValue('');
-                        	               		}else{
-                        	               			Ext.Msg.alert("Error", "Please select a category to remove.");
-                        	               		}
-                        	                                                                             
-                        	               }
-                        	            }
-                        	         }
-                       	         	*/
-                    	      	}
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+										  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+										  	handler : function(){						             	  							           	  		
+										  		removeCategory(<?= $cat->ID ?>,task_queue_grid);
+										  	}
+										}
+										<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+									<?php } ?>									
                           	]
                    	}
 					
@@ -2121,7 +2076,7 @@ Ext.onReady(function() {
 	 *************************************/		   	   	      	
 	task_queue_grid.on("celldblclick", function(){		
 		loadTask(task_queue_grid.getSelectedRowId());
-	});   			
+	});   				
 
 	task_pending_grid.on("celldblclick", function(){		
 		loadTask(task_pending_grid.getSelectedRowId());

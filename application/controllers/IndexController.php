@@ -29,7 +29,8 @@ class IndexController extends Zend_Controller_Action {
 	 */
     public function indexAction(){
 
-    	
+    	$user = Zend_Registry::get('user');   		   		
+   		$this->view->cats = Doctrine_Core::getTable('Console_Category')->getByUserId($user->getUserId());
     	
     }
 	
