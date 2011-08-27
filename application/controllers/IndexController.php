@@ -31,6 +31,7 @@ class IndexController extends Zend_Controller_Action {
 
     	$user = Zend_Registry::get('user');   		   		
    		$this->view->cats = Doctrine_Core::getTable('Console_Category')->getByUserId($user->getUserId());
+   		$this->view->priorities = Doctrine_Core::getTable('Console_Priority')->findAll();
     	
     }
 	

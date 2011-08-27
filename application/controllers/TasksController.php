@@ -444,6 +444,57 @@ class TasksController extends Zend_Controller_Action {
 	}
 
 	
+	/**
+	* set priority of tasks
+	*/	 
+	public function setPriorityAction(){				
+				
+		$user = Zend_Registry::get('user');
+		
+		try{
+			
+			if( $this->_hasParam('data') && $this->_hasParam('id') ){
+
+				$priority = Doctrine_Core::getTable('Console_Priority')->find($this->_getParam('id') );
+
+				if( $priority == false ){
+					throw new Exception('invalid priority id');
+				}								
+				
+	    		if(is_array($this->_getParam('data'))){ 
+		    		$ids = $this->_getParam('data');
+				}else{
+					$ids = array($this->_getParam('data'));		
+				}																				
+				
+				foreach( $ids as $id ){
+					
+					$task = Doctrine_Core::getTable('Console_Task')->find($id);
+
+					if( $task == false ){
+						throw new Exception('invalid task id');
+					}
+
+					if( $task->isUserTask($user->getUserId()) == false ){    			
+		    			throw new Exception('task does not belong to current user');
+		    		}
+					
+					$task->PRIORITY_ID = $priority->ID;
+					$task->save();																					
+												
+				}									
+							
+			}
+			
+			$this->_helper->json->sendJson( array( "success" => true ) );	
+		}catch( Exception $e ){
+			$this->_helper->logger->log()->err( $e->getMessage() );			    				
+    		$this->_helper->json->sendJson( array( "success" => false ) );    		
+    	} 
+						
+	}
+	
+	
 	/***************************************
 	* MANAGE QUEUE
 	****************************************/
