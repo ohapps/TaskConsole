@@ -550,6 +550,75 @@ public function testLoadTaskDetailAction(){
     }
     
     
+	public function testSetPriorityAction(){
+    	
+    	// successful set priority
+    	$this->request->setMethod('POST')->setPost(
+			array(
+				'data' => 1,
+				'id' => 1
+			)
+		);
+		$this->dispatch('/tasks/set-priority');
+        $this->assertController('tasks');
+        $this->assertAction('set-priority');
+        $this->assertContains('"success":true', $this->getResponse()->getBody());
+    	
+        // successful set priority
+    	$this->resetRequest()->resetResponse();
+        $this->request->setMethod('POST')->setPost(
+			array(
+				'data' => array(1,2),
+				'id' => 1
+			)
+		);
+		$this->dispatch('/tasks/set-priority');
+        $this->assertController('tasks');
+        $this->assertAction('set-priority');  
+        $this->assertContains('"success":true', $this->getResponse()->getBody());
+        
+        // failed set priority of another user's task
+    	$this->resetRequest()->resetResponse();
+        $this->request->setMethod('POST')->setPost(
+			array(
+				'data' => 5,
+				'id' => 1			
+			)
+		);
+		$this->dispatch('/tasks/set-priority');
+        $this->assertController('tasks');
+        $this->assertAction('set-priority');  
+        $this->assertContains('"success":false', $this->getResponse()->getBody());
+        
+        // failed invalid task id
+    	$this->resetRequest()->resetResponse();
+        $this->request->setMethod('POST')->setPost(
+			array(
+				'data' => 0,
+				'id' => 1
+			)
+		);
+		$this->dispatch('/tasks/set-priority');
+        $this->assertController('tasks');
+        $this->assertAction('set-priority');
+        $this->assertContains('"success":false', $this->getResponse()->getBody());
+        
+        // failed invalid priority
+    	$this->resetRequest()->resetResponse();
+        $this->request->setMethod('POST')->setPost(
+			array(
+				'data' => 1,
+				'id' => 5
+			)
+		);
+		$this->dispatch('/tasks/set-priority');
+        $this->assertController('tasks');
+        $this->assertAction('set-priority');
+        $this->assertContains('"success":false', $this->getResponse()->getBody());                
+        
+    }
+    
+    
 	public function testAddToQueueAction(){
     	
     	// successful add to queue

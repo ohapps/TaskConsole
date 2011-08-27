@@ -441,19 +441,55 @@ var task_pending_pagingbar = new Ext.PagingToolbar({
 	emptyMsg: "No tasks to display"
 });
 
-var category_pending_combo = new Ext.form.ComboBox({	
-	hideLabel: true, 	 
-	width: 200,	 
-	store: category_store, 
-	valueField: "ID", 
-	displayField: "DESCRIPTION", 
-	typeAhead: true, 
-	mode: "local", 
-	triggerAction: "all", 
-	emptyText: "select category to apply / remove", 
-	selectOnFocus: true, 
-	editable: false
+var task_pending_action_menu = new Ext.menu.Menu({
+    items:     [
+                	{
+                    	text: "Apply Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/add.png",                    
+                    	menu:	[
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+							           	  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+							           	  	handler : function(){						             	  							           	  		
+							           	  		applyCategory(<?= $cat->ID ?>,task_pending_grid);
+							           	  	}
+							           	}
+							           	<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+						           	<?php } ?>								
+                          		]
+                   	},{
+                    	text: "Remove Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/delete.png",                    
+                    	menu:[
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+										  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+										  	handler : function(){						             	  							           	  		
+										  		removeCategory(<?= $cat->ID ?>,task_pending_grid);
+										  	}
+										}
+										<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+									<?php } ?>									
+                          	]
+                   	},{
+                    	text: "Set Priority",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/error.png",                    
+                    	menu:[
+									<?php foreach( $this->priorities as $cnt => $priority ){ ?>
+										{
+										  	text: "<?= $priority->DESCRIPTION ?>",						           	  
+										  	handler : function(){						             	  							           	  		
+										  		setPriority(<?= $priority->ID ?>,task_pending_grid);
+										  	}
+										}
+										<?php if( ( $cnt + 1 ) != count($this->priorities) ){ ?>,<?php } ?>
+									<?php } ?>									
+                          	]
+                   	}
+					
+            ]    
 });
+
 
 var task_pending_grid = new Ext.ux.EasyEditorGridPanel({
                                                                      		
@@ -518,34 +554,11 @@ var task_pending_grid = new Ext.ux.EasyEditorGridPanel({
               	}
           	},
           	'-',
-			category_pending_combo,          	
           	{
-           		text: "Apply",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
-               	handler : function(){
-
-               		if( category_pending_combo.getValue() != '' ){
-               			applyCategory(category_pending_combo.getValue(),task_pending_grid);
-               			category_pending_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to apply.");
-               		}
-                	
-               	}
-          	},{
-           		text: "Remove",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
-               	handler : function(){
-
-               		if( category_pending_combo.getValue() != '' ){
-               			removeCategory(category_pending_combo.getValue(),task_pending_grid);
-               			category_pending_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to remove.");
-               		}
-                	
-               	}
-          	}          
+                text: "More Actions",
+                icon: "<?= $this->baseUrl() ?>/html/images/cog.png",
+                menu: task_pending_action_menu
+            }          	          
       	],
 	bbar: task_pending_pagingbar 	    
 
@@ -583,18 +596,53 @@ var task_complete_pagingbar = new Ext.PagingToolbar({
 	emptyMsg: "No tasks to display"
 });
 
-var category_complete_combo = new Ext.form.ComboBox({ 
-	hideLabel: true, 	 
-	width: 200,	 
-	store: category_store, 
-	valueField: "ID", 
-	displayField: "DESCRIPTION", 
-	typeAhead: true, 
-	mode: "local", 
-	triggerAction: "all", 
-	emptyText: "select category to apply / remove", 
-	selectOnFocus: true, 
-	editable: false
+var task_complete_action_menu = new Ext.menu.Menu({
+    items:     [
+                	{
+                    	text: "Apply Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/add.png",                    
+                    	menu:	[
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+							           	  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+							           	  	handler : function(){						             	  							           	  		
+							           	  		applyCategory(<?= $cat->ID ?>,task_complete_grid);
+							           	  	}
+							           	}
+							           	<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+						           	<?php } ?>								
+                          		]
+                   	},{
+                    	text: "Remove Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/delete.png",                    
+                    	menu:[
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+										  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+										  	handler : function(){						             	  							           	  		
+										  		removeCategory(<?= $cat->ID ?>,task_complete_grid);
+										  	}
+										}
+										<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+									<?php } ?>									
+                          	]
+                   	},{
+                    	text: "Set Priority",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/error.png",                    
+                    	menu:[
+									<?php foreach( $this->priorities as $cnt => $priority ){ ?>
+										{
+										  	text: "<?= $priority->DESCRIPTION ?>",						           	  
+										  	handler : function(){						             	  							           	  		
+										  		setPriority(<?= $priority->ID ?>,task_complete_grid);
+										  	}
+										}
+										<?php if( ( $cnt + 1 ) != count($this->priorities) ){ ?>,<?php } ?>
+									<?php } ?>									
+                          	]
+                   	}
+					
+            ]    
 });
 
 var task_complete_grid = new Ext.ux.EasyEditorGridPanel({
@@ -641,34 +689,11 @@ var task_complete_grid = new Ext.ux.EasyEditorGridPanel({
              	}
          	},
           	'-',
-          	category_complete_combo,
           	{
-           		text: "Apply",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
-               	handler : function(){
-
-               		if( category_complete_combo.getValue() != '' ){
-               			applyCategory(category_complete_combo.getValue(),task_complete_grid);
-               			category_complete_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to apply.");
-               		}
-                	
-               	}
-          	},{
-           		text: "Remove",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
-               	handler : function(){
-
-               		if( category_complete_combo.getValue() != '' ){
-               			removeCategory(category_complete_combo.getValue(),task_complete_grid);
-               			category_complete_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to remove.");
-               		}
-                	
-               	}
-          	}                                       
+                text: "More Actions",
+                icon: "<?= $this->baseUrl() ?>/html/images/cog.png",
+                menu: task_complete_action_menu
+            }                                        
      	],
 	bbar: task_complete_pagingbar 	    
 
@@ -706,18 +731,53 @@ var task_upcoming_pagingbar = new Ext.PagingToolbar({
 	emptyMsg: "No tasks to display"
 });
 
-var category_upcoming_combo = new Ext.form.ComboBox({ 
-	hideLabel: true, 	 
-	width: 200,	 
-	store: category_store, 
-	valueField: "ID", 
-	displayField: "DESCRIPTION", 
-	typeAhead: true, 
-	mode: "local", 
-	triggerAction: "all", 
-	emptyText: "select category to apply / remove", 
-	selectOnFocus: true, 
-	editable: false
+var task_upcoming_action_menu = new Ext.menu.Menu({
+    items:     [
+                	{
+                    	text: "Apply Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/add.png",                    
+                    	menu:	[
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+							           	  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+							           	  	handler : function(){						             	  							           	  		
+							           	  		applyCategory(<?= $cat->ID ?>,task_upcoming_grid);
+							           	  	}
+							           	}
+							           	<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+						           	<?php } ?>								
+                          		]
+                   	},{
+                    	text: "Remove Category",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/delete.png",                    
+                    	menu:[
+									<?php foreach( $this->cats as $cnt => $cat ){ ?>
+										{
+										  	text: "<?= $cat->DESCRIPTION ?>",						           	  
+										  	handler : function(){						             	  							           	  		
+										  		removeCategory(<?= $cat->ID ?>,task_upcoming_grid);
+										  	}
+										}
+										<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+									<?php } ?>									
+                          	]
+                   	},{
+                    	text: "Set Priority",
+                    	icon: "<?= $this->baseUrl() ?>/html/images/error.png",                    
+                    	menu:[
+									<?php foreach( $this->priorities as $cnt => $priority ){ ?>
+										{
+										  	text: "<?= $priority->DESCRIPTION ?>",						           	  
+										  	handler : function(){						             	  							           	  		
+										  		setPriority(<?= $priority->ID ?>,task_upcoming_grid);
+										  	}
+										}
+										<?php if( ( $cnt + 1 ) != count($this->priorities) ){ ?>,<?php } ?>
+									<?php } ?>									
+                          	]
+                   	}
+					
+            ]    
 });
 
 var task_upcoming_grid = new Ext.ux.EasyEditorGridPanel({
@@ -749,34 +809,11 @@ var task_upcoming_grid = new Ext.ux.EasyEditorGridPanel({
             	}
         	},
           	'-',
-          	category_upcoming_combo,
           	{
-           		text: "Apply",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/add.png",
-               	handler : function(){
-
-               		if( category_upcoming_combo.getValue() != '' ){
-               			applyCategory(category_upcoming_combo.getValue(),task_upcoming_grid);
-               			category_upcoming_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to apply.");
-               		}
-                	
-               	}
-          	},{
-           		text: "Remove",
-               	icon: "<?= $this->baseUrl(); ?>/html/images/delete.png",
-               	handler : function(){
-
-               		if( category_upcoming_combo.getValue() != '' ){
-               			removeCategory(category_upcoming_combo.getValue(),task_upcoming_grid);
-               			category_upcoming_combo.setValue('');
-               		}else{
-               			Ext.Msg.alert("Error", "Please select a category to remove.");
-               		}
-                	
-               	}
-          	}                                       
+                text: "More Actions",
+                icon: "<?= $this->baseUrl() ?>/html/images/cog.png",
+                menu: task_upcoming_action_menu
+            }                                      
     	],
 	bbar: task_upcoming_pagingbar 	    
 
