@@ -78,14 +78,14 @@ class TasksController extends Zend_Controller_Action {
     		try{    			    				
     			
     			$task->save();    			    			
-    			
-    			if( $this->_getParam('CATEGORIES') != null ){    				
-    				$categories = explode(',',$this->_getParam('CATEGORIES'));    				    				    				    				    				
+    			    			
+    			if( is_array( $this->_getParam('CATEGORIES') ) === true ){    				
+    				$categories = $this->_getParam('CATEGORIES');    				    				    				    				    				
     			}else{
     				$categories = array();
     			}
     			
-    			$task->setCategoriesFromArray($categories);
+    			$task->setCategoriesFromArray($categories);    			
     			    			
     			if( $this->_getParam('ADD_TO_QUEUE') == '1' ){
     				$task->addToQueue();
@@ -178,7 +178,8 @@ class TasksController extends Zend_Controller_Action {
 				"RECUR_UNIT_TYPE" => $task->RECUR_UNIT_TYPE,
 				"RECUR_UNITS" => $task->RECUR_UNITS,
 				"ADD_TO_QUEUE" => $task->isQueued(),
-				"CATEGORIES" => $task->categoryIdsList()
+				"CATEGORIES" => $task->categoryIdsList(),
+				"CATEGORIES_1" => 1
 			);
 			
 			$this->_helper->json->sendJson( array( "success" => "true", "data" => $data ) );
@@ -240,7 +241,7 @@ class TasksController extends Zend_Controller_Action {
 				"COMPLETED" => $task->COMPLETED,
 				"DISPLAY_DATE" => $task->DISPLAY_DATE,
 				"QUEUE_ORDER" => $task->QUEUE_ORDER,
-				"CATEGORIES" => $task->categoryList()
+				"CATEGORIES" => $task->categoryList()				
 			);
 		
 		}

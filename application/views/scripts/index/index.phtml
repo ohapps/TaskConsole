@@ -1,88 +1,15 @@
 <script type="text/javascript">
 
-/*********************
-* CATEGORIES
-********************/
-var Category = Ext.data.Record.create([
-	{name: "ID", type: "string"},                               	
-	{name: "DESCRIPTION", type: "string"}
-]);
-
-var category_store = new Ext.data.Store({ 
-	url: "<?= $this->baseUrl(); ?>/projects/usercats",	 	
-	sortInfo: {
-		field: 'DESCRIPTION',
-		direction: 'ASC'
-	},
-	reader: new Ext.data.JsonReader({ totalProperty: "results", root: "data", id: "ID" }, Category), 
-	autoLoad: true 
+var category_store = new Ext.data.SimpleStore({ 
+	id: 0, 
+	fields: ["ID", "DESCRIPTION"], 
+	data : [ 
+				<?php foreach( $this->cats as $cnt => $cat ){ ?>
+					["<?= $cat->ID ?>","<?= $cat->DESCRIPTION ?>"]					             	  							           	  							  		
+					<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+				<?php } ?>	    		 
+		   ] 
 });
-
-function formatDeleteCatLink(value, metaData, record, rowIndex, colIndex, store){		
-    return '<a href="javascript:deleteCategory();" title="delete" style=""><img src="<?= $this->baseUrl() ?>/html/images/delete.png" /></a>';	            
-}
-
-var category_cm = new Ext.grid.ColumnModel([
-	{ id: "id", header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatDeleteCatLink },  
-	{ id: "DESCRIPTION", header: "Description", dataIndex: "DESCRIPTION", width: 200, editor: new Ext.form.TextField({ allowBlank: false }) }         
-]);
-
-category_cm.defaultSortable = true;
-                                               
-var category_grid = new Ext.ux.EasyEditorGridPanel({
-                                           		
-	store: category_store,
-	cm: category_cm,    
-	clicksToEdit:1,
-	autoExpandColumn: "DESCRIPTION",
-	frame:false,    
-	stripeRows: true,
-	selModel: new Ext.grid.RowSelectionModel( {singleSelect:true} ),
-	loadMask: true,
-
-	tbar: [
-			{ 
-				text: "New Category",
-				icon: "<?= $this->baseUrl() ?>/html/images/add.png",
-				handler : function(){
-					category_grid.addNewRow({ rec : new Category({ ID: "", DESCRIPTION: "" }) });
-				}
-			},{
-				text: "Save Changes",
-				icon: "<?= $this->baseUrl() ?>/html/images/disk.png",
-				handler : function(){
-					category_grid.postGrid( { url: "<?= $this->baseUrl(); ?>/projects/savecat", updatePK : true });
-				}              
-			}
-		]
-});
-
-category_window = new Ext.Window({
-    
-    title: "Categories",                                            	      
-    closeAction: 'hide',
-	modal: true,
-	width: 400,
-	height: 300,
-	layout: "fit",
-    items: category_grid
-    
-});
-
-function deleteCategory(){
-
-	Ext.MessageBox.confirm("Confirm", "Are you sure you want to delete this item?", function(btn){ 
-		if ( btn == "yes"){
-			category_grid.deleteSelectedRows( { url: "<?= $this->baseUrl(); ?>/projects/deletecat" } );
-		}
-	});
-	
-}
-
-function editCategories(){
-	category_window.show();	
-	category_window.center();
-}
    				
 /*********************
 * TASK FILTER OBJECT
@@ -1131,15 +1058,7 @@ var project_grid = new Ext.ux.EasyEditorGridPanel({
 	               		}
 	                	
 	               	}
-	          	},
-				'-',
-				{ 
-		        	text: "Edit Categories",		            
-		            icon: "<?= $this->baseUrl() ?>/html/images/cog.png",
-		            handler : function(){
-		            	editCategories();
-		            }
-		      	},
+	          	},				
 				'-',
 				'Filter By Project Status: ',
 				project_status_filter_combo,
@@ -1184,16 +1103,21 @@ var project_combo = new Ext.form.ComboBox({
 	listeners: {
 		select: {
 			fn: function(combo,record){
-				task_form.getForm().findField('CATEGORIES').setValue(record.get("CATEGORIES"));
+				//task_form.getForm().findField('CATEGORIES').setValue(record.get("CATEGORIES"));
 			}
 		}
 	}
 });
 
-var priority_store = new Ext.data.Store({ 
-	url: "<?= $this->baseUrl(); ?>/projects/priorities", 
-	reader: new Ext.data.JsonReader({ root: "data", id: "ID" }, ["ID","DESCRIPTION"] ), 
-	autoLoad: true 
+var priority_store = new Ext.data.SimpleStore({ 
+	id: 0, 
+	fields: ["ID", "DESCRIPTION"], 
+	data : [ 
+				<?php foreach( $this->priorities as $cnt => $priority ){ ?>
+					["<?= $priority->ID ?>","<?= $priority->DESCRIPTION ?>"]					             	  							           	  							  		
+					<?php if( ( $cnt + 1 ) != count($this->priorities) ){ ?>,<?php } ?>
+				<?php } ?>	    		 
+		   ] 
 });
 
 var priority_combo = new Ext.form.ComboBox({ 
@@ -1275,7 +1199,22 @@ var task_form = new Ext.form.FormPanel({
 			height: 100,
 			allowBlank: false
 		},
-		project_combo,		
+		project_combo,
+
+		{
+            xtype: 'checkboxgroup',
+            fieldLabel: 'Categories',
+            cls: 'x-check-group-alt',            
+            columns: 3,
+            items: [
+				<?php foreach( $this->cats as $cnt => $cat ){ ?>
+					{boxLabel: '<?= $cat->DESCRIPTION ?>', name: 'CATEGORIES_<?= $cat->ID ?>'}					
+					<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+				<?php } ?>                    
+            ]
+        },
+		
+		/*		
 		{
             xtype: 'multiselect',
             fieldLabel: 'Categories',
@@ -1293,7 +1232,9 @@ var task_form = new Ext.form.FormPanel({
 	                task_form.getForm().findField('CATEGORIES').reset();
 	            }
             }]
-        },		
+        },
+        */
+        		
 		priority_combo,
 		{ 
 			xtype: "datefield", 
@@ -2065,14 +2006,6 @@ var tab_panel = new Ext.TabPanel({
 						            handler : function(){
 						            	newProject();
 						            }
-						      	},
-						      	'-',
-						      	{ 
-						        	text: "Edit Categories",		            
-						            icon: "<?= $this->baseUrl() ?>/html/images/cog.png",
-						            handler : function(){
-						            	editCategories();
-						            }
 						      	}
 							]
 	      		},{
@@ -2149,17 +2082,7 @@ Ext.onReady(function() {
 
 	task_upcoming_grid.on("celldblclick", function(){		
 		loadTask(task_upcoming_grid.getSelectedRowId());
-	});
-
-	category_window.on('hide', function(){
-	
-		task_filter_tree.getRootNode().reload(
-			function(){
-				filterTasks('','');		
-			}
-		);				
-				
-	});
+	});	
 
 	<?php if( isset( $this->user ) ){ ?>
   	
