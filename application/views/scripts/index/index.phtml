@@ -1202,18 +1202,25 @@ var task_form = new Ext.form.FormPanel({
 		project_combo,
 
 		{
-            xtype: 'checkboxgroup',
-            fieldLabel: 'Categories',
-            cls: 'x-check-group-alt',            
-            columns: 3,
-            items: [
-				<?php foreach( $this->cats as $cnt => $cat ){ ?>
-					{boxLabel: '<?= $cat->DESCRIPTION ?>', name: 'CATEGORIES_<?= $cat->ID ?>'}					
-					<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
-				<?php } ?>                    
-            ]
+            xtype: 'fieldset',
+            title: 'Categories',            
+            autoHeight:true,                                    
+            items :[	
+						{
+						    xtype: 'checkboxgroup',						    
+						    hideLabel: true,
+						    cls: 'x-check-group-alt',            
+						    columns: 3,
+						    items: [
+								<?php foreach( $this->cats as $cnt => $cat ){ ?>
+									{boxLabel: '<?= $cat->DESCRIPTION ?>', name: 'CATEGORIES_<?= $cat->ID ?>'}					
+									<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+								<?php } ?>                    
+						    ]
+						}						                                                                                                                                                                                                        	
+            		]
         },
-		
+				
 		/*		
 		{
             xtype: 'multiselect',
@@ -1234,16 +1241,44 @@ var task_form = new Ext.form.FormPanel({
             }]
         },
         */
-        		
-		priority_combo,
+        
+        {
+            xtype: 'fieldset',
+            title: 'Importance',            
+            autoHeight:true,                             
+            items :[	
+						{ 
+							xtype: "panel",  
+							baseCls: "x-plain",                      
+						  	layout:"column",
+						  	items:[
+						              {   
+						                 columnWidth:.50, 
+						                 layout: "form",             
+										 baseCls: "x-plain",                                        
+						                 items: [						                 			
+													priority_combo		
+						                 		]
+						              },{   
+						                 columnWidth:.50, 
+										 baseCls: "x-plain",                      
+						                 layout: "form",                               
+						                 items: [
+													{ 
+														xtype: "datefield", 
+														fieldLabel: "Due Date", 
+														name: "DUE_DATE", 
+														width: 100,
+														allowBlank: true, 
+														format: "Y-m-d" 
+													}
+						                 		]
+						              }
+						      	]
+						}                                                                                                                                                                                                        	
+            		]
+        },		
 		{ 
-			xtype: "datefield", 
-			fieldLabel: "Due Date", 
-			name: "DUE_DATE", 
-			width: 100,
-			allowBlank: true, 
-			format: "Y-m-d" 
-		},{ 
 			xtype: "combo",
 			fieldLabel: "Add To Queue",
 			hiddenName: "ADD_TO_QUEUE", 	 
