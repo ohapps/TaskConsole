@@ -20,7 +20,8 @@ class TasksControllerTest extends AbstractControllerTest {
 				'DUE_DATE' => $today->toString($config['date']['dbFormat']),
 				'RECUR_UNIT_TYPE' => 'days',
 				'RECUR_UNITS' => '7',
-				'CATEGORIES' => '1,2',
+				'CATEGORIES_1' => '1',
+				'CATEGORIES_2' => '1',
 				'ADD_TO_QUEUE' => '1'
 			)
 		);
@@ -40,7 +41,8 @@ class TasksControllerTest extends AbstractControllerTest {
 				'DUE_DATE' => $today->toString($config['date']['dbFormat']),
 				'RECUR_UNIT_TYPE' => 'days',
 				'RECUR_UNITS' => '7',
-				'CATEGORIES' => '1,2',
+				'CATEGORIES_1' => '1',
+				'CATEGORIES_2' => '1',
 				'ADD_TO_QUEUE' => '1'
 			)
 		);

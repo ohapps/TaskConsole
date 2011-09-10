@@ -1103,7 +1103,7 @@ var project_combo = new Ext.form.ComboBox({
 	listeners: {
 		select: {
 			fn: function(combo,record){
-				//task_form.getForm().findField('CATEGORIES').setValue(record.get("CATEGORIES"));
+				setTaskCategories(record.get("CATEGORIES"));				
 			}
 		}
 	}
@@ -1200,7 +1200,6 @@ var task_form = new Ext.form.FormPanel({
 			allowBlank: false
 		},
 		project_combo,
-
 		{
             xtype: 'fieldset',
             title: 'Categories',            
@@ -1219,30 +1218,7 @@ var task_form = new Ext.form.FormPanel({
 						    ]
 						}						                                                                                                                                                                                                        	
             		]
-        },
-				
-		/*		
-		{
-            xtype: 'multiselect',
-            fieldLabel: 'Categories',
-            name: 'CATEGORIES',
-            width: 400,
-            height: 125,
-            style: "background: #FFFFFF;",            
-            allowBlank: true,            
-            store: category_store,
-            displayField: "DESCRIPTION",
-            valueField: "ID",
-            tbar:[{
-                text: 'clear',
-                handler: function(){
-	                task_form.getForm().findField('CATEGORIES').reset();
-	            }
-            }]
-        },
-        */
-        
-        {
+        },{
             xtype: 'fieldset',
             title: 'Importance',            
             autoHeight:true,                             
@@ -1277,23 +1253,7 @@ var task_form = new Ext.form.FormPanel({
 						      	]
 						}                                                                                                                                                                                                        	
             		]
-        },		
-		{ 
-			xtype: "combo",
-			fieldLabel: "Add To Queue",
-			hiddenName: "ADD_TO_QUEUE", 	 
-			width: 100,	 
-			store: ynss,
-			value: "1", 
-			valueField: "key", 
-			displayField: "val", 
-			typeAhead: true, 
-			mode: "local", 
-			triggerAction: "all", 
-			emptyText: "", 
-			selectOnFocus: true, 
-			editable: false
-		},{
+        },{
             xtype: 'fieldset',
             title: 'Recurrence',            
             autoHeight:true,
@@ -1345,6 +1305,21 @@ var task_form = new Ext.form.FormPanel({
 						}                                                                                                                                                                                                        	
             		]
         },{ 
+			xtype: "combo",
+			fieldLabel: "Add To Queue",
+			hiddenName: "ADD_TO_QUEUE", 	 
+			width: 100,	 
+			store: ynss,
+			value: "1", 
+			valueField: "key", 
+			displayField: "val", 
+			typeAhead: true, 
+			mode: "local", 
+			triggerAction: "all", 
+			emptyText: "", 
+			selectOnFocus: true, 
+			editable: false
+		},{ 
 			xtype: "hidden",
 			name: "ID"
 		}
@@ -1412,12 +1387,13 @@ function newTasks(){
 	if( task_filter.project != '' ){
 		project_combo.setValue( task_filter.project );
 		rec = project_combo.store.getById( task_filter.project );
-		task_form.getForm().findField('CATEGORIES').setValue( rec.get("CATEGORIES") );
-	}else if( task_filter.category != '' ){
-		task_form.getForm().findField('CATEGORIES').setValue( task_filter.category );
+		setTaskCategories(rec.get("CATEGORIES"));
+	}else if( task_filter.category != '' ){		
+		setTaskCategories(task_filter.category);
 	}
 	
 	task_window.center();
+	
 }
 
 
@@ -1464,6 +1440,25 @@ function loadTask(id){
 	
 }
 
+function setTaskCategories(cats){
+
+	<?php foreach( $this->cats as $cnt => $cat ){ ?>
+		task_form.getForm().findField('CATEGORIES_<?= $cat->ID ?>').setValue( '0' );							
+	<?php } ?>
+	
+	if( cats != '' ){
+	
+		var catArray = cats.split(',');
+	
+		for(i=0;i<catArray.length;i++){
+			
+			task_form.getForm().findField('CATEGORIES_' + catArray[i]).setValue( '1' );
+			
+		}		
+
+	}
+	
+}
 
 function moveInQueue(dir,id){
 
@@ -1515,22 +1510,23 @@ var project_form = new Ext.form.FormPanel({
 					height: 150,
 					allowBlank: true
 				},{
-		            xtype: 'multiselect',
-		            fieldLabel: 'Categories',
-		            name: 'CATEGORIES',
-		            width: 400,
-		            height: 125,
-		            style: "background: #FFFFFF;",            
-		            allowBlank: true,            
-		            store: category_store,
-		            displayField: "DESCRIPTION",
-		            valueField: "ID",
-		            tbar:[{
-		                text: 'clear',
-		                handler: function(){
-			                project_form.getForm().findField('CATEGORIES').reset();
-			            }
-		            }]
+		            xtype: 'fieldset',
+		            title: 'Categories',            
+		            autoHeight:true,                                    
+		            items :[	
+								{
+								    xtype: 'checkboxgroup',						    
+								    hideLabel: true,
+								    cls: 'x-check-group-alt',            
+								    columns: 3,
+								    items: [
+										<?php foreach( $this->cats as $cnt => $cat ){ ?>
+											{boxLabel: '<?= $cat->DESCRIPTION ?>', name: 'CATEGORIES_<?= $cat->ID ?>'}					
+											<?php if( ( $cnt + 1 ) != count($this->cats) ){ ?>,<?php } ?>
+										<?php } ?>                    
+								    ]
+								}						                                                                                                                                                                                                        	
+		            		]
 		        },{ 
 					xtype: "combo",
 					fieldLabel: "Status",

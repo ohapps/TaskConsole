@@ -148,11 +148,25 @@ class ProjectsController extends Zend_Controller_Action
     			
     		}    		
     		
+    		$categories = array();
+    			
+    		$params = $this->_getAllParams();
+    			
+    		foreach($params as $param => $value){
+    				
+    			if( substr_count($param,'CATEGORIES_') == 1 ){
+    				$categories[] = strtr($param,array('CATEGORIES_'=>''));
+    			}
+    				
+    		}
+    		
+    		/*
     		if( $this->_getParam('CATEGORIES') != null ){    				
     			$categories = explode(',',$this->_getParam('CATEGORIES'));    				    				    				    				    				
     		}else{
     			$categories = array();
     		}
+    		*/
     			
     		$project->setCategoriesFromArray($categories);
     		
@@ -224,6 +238,10 @@ class ProjectsController extends Zend_Controller_Action
 				"AUTO_COMPLETE" => $project->AUTO_COMPLETE,
 				"CATEGORIES" => $project->categoryIdsList()
 			);
+			
+			foreach( $project->Categories as $category ){
+	    		$data["CATEGORIES_" . $category->ID] = 1;
+	    	}
 			
 			$this->_helper->json->sendJson( array( "success" => "true", "data" => $data ) );
 		

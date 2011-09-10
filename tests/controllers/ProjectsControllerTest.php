@@ -77,7 +77,8 @@ class ProjectsControllerTest extends AbstractControllerTest {
 				'COMMENTS' => 'test',
 				'AUTO_COMPLETE' => '1',
 				'STATUS' => 'complete',
-				'CATEGORIES' => '1,2'
+				'CATEGORIES_1' => '1',
+				'CATEGORIES_2' => '1'
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -94,7 +95,8 @@ class ProjectsControllerTest extends AbstractControllerTest {
 				'COMMENTS' => 'test',
 				'AUTO_COMPLETE' => '1',
 				'STATUS' => 'active',
-				'CATEGORIES' => '1'								
+				'CATEGORIES_1' => '1',
+				'CATEGORIES_2' => '1'								
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -111,7 +113,8 @@ class ProjectsControllerTest extends AbstractControllerTest {
 				'COMMENTS' => 'test',
 				'AUTO_COMPLETE' => '1',
 				'STATUS' => 'active',
-				'CATEGORIES' => '9'								
+				'CATEGORIES_1' => '1',
+				'CATEGORIES_9' => '1'								
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -128,7 +131,8 @@ class ProjectsControllerTest extends AbstractControllerTest {
 				'COMMENTS' => 'test',
 				'AUTO_COMPLETE' => '1',
 				'STATUS' => 'active',
-				'CATEGORIES' => '1'								
+				'CATEGORIES_1' => '1',
+				'CATEGORIES_2' => '1'							
 			)
 		);
 		$this->dispatch('/projects/saveproject');
@@ -145,7 +149,8 @@ class ProjectsControllerTest extends AbstractControllerTest {
 				'COMMENTS' => 'test',
 				'AUTO_COMPLETE' => '1',
 				'STATUS' => 'active',
-				'CATEGORIES' => '1'								
+				'CATEGORIES_1' => '1',
+				'CATEGORIES_2' => '1'							
 			)
 		);
 		$this->dispatch('/projects/saveproject');

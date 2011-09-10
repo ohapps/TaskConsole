@@ -246,27 +246,28 @@ Ext.extend( Ext.ux.EasyEditorGridPanel, Ext.grid.EditorGridPanel, {
         
         deleteSelectedRows : function( config ){
         	
-        	Ext.apply( this, config, this.defaults );
+        	Ext.apply( this, config, this.defaults );        	
+        	var pk = "";
         	        	
         	rows = this.getSelectionModel().selections.items;
                                             
             if ( rows.length > 0 ){
             	             	
-				for( i=0; i<rows.length; i++ ) {
-		
-		        		 this.params[this.pkCol] = rows[i].data[this.pkCol];
-		        		 
-		                 var conn = new Ext.data.Connection({
-		                     	extraParams: this.extraParams
-		                 });
+				for( i=0; i<rows.length; i++ ) {												
+					
+		        		pk = rows[i].data[this.pkCol];
+		        		 		        		
+		                var conn = new Ext.data.Connection({
+		                     extraParams: this.extraParams
+		                });
 		                  			
-		                 conn.request({
-					          url: this.url,            
-					          method: "POST",
-					          params: this.params,
-					          success: this.getStore().remove( rows[i] ),
-					          failure: function(){ Ext.Msg.alert("Alert", "One of the selected rows could not be deleted." ); } 
-					      });					      					     
+		                conn.request({
+					         url: this.url,            
+					         method: "POST",
+					         params: this.pkCol + "=" +  pk,
+					         success: this.getStore().remove( rows[i] ),
+					         failure: function(){ Ext.Msg.alert("Alert", "One of the selected rows could not be deleted." ); } 
+					    });					    		        		 		        		
 					      
 		        }	            	            										          							            	                  
                                                                                                                                                  		                                                   
