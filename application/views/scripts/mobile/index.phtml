@@ -1,6 +1,32 @@
 <script type="text/javascript">
 
 
+Ext.override(Ext.plugins.ListPagingPlugin, {
+    onListUpdate : function() {
+        if (this.list.store && this.list.store.data.length < (this.list.store.currentPage * this.list.store.pageSize)) {
+            if (!this.rendered) {
+                return false;
+            } else if (!this.autoPaging) {
+                this.el.removeCls('x-loading');
+                this.el.remove();
+            } else {
+                this.loading = false;
+            }
+            return false;
+        }
+
+        if (!this.rendered) {
+            this.render();
+        }
+
+        this.el.appendTo(this.list.getTargetEl());
+        if (!this.autoPaging) {
+            this.el.removeCls('x-loading');
+        }
+        this.loading = false;
+    }
+});
+
 var App = new Ext.Application({
 	
 	name : 'TaskConsole',	
@@ -52,6 +78,9 @@ var App = new Ext.Application({
 		    itemTpl : '<div style="font-weight: bold;">{PROJECT}</div>{DESCRIPTION}',
 		    grouped : true,		    		    
 		    store: TaskConsole.taskQueueStore,
+		    onItemDisclosure : function(record,btn,index){
+			    Ext.Msg.Alert('Tap','Test');
+		    },
 		    plugins: [
 		  		{
                 	ptype: 'listpaging',
@@ -66,11 +95,13 @@ var App = new Ext.Application({
 			model: 'Task',
 			getGroupString : function(record) {
 		        return record.get('PRIORITY');
-		    },			
+		    },
+		    pageSize: 5,
+		    clearOnPageLoad: false,			
 			proxy: {
 				type: 'ajax',
 				url: '<?= $this->baseUrl(); ?>/tasks/user-tasks/status/pending',
-				extraParams: { start: 0, limit: 50, priorities: "1,2,3"  },
+				extraParams: { start: 0, limit: 5, priorities: "1,2,3"  },
 			    reader: {
 			    	type: 'json',
 			        root: 'data'
@@ -83,29 +114,16 @@ var App = new Ext.Application({
 		    fullscreen: true,		    
 		    itemTpl : '<div style="font-weight: bold;">{PROJECT}</div>{DESCRIPTION}',
 		    grouped : true,		    		    
-		    store: TaskConsole.taskPendingStore
-		});
-		
-		/*	
-		TaskConsole.taskList = new Ext.NestedList({
-			fullscreen: true,
-			title: 'Tasks',
-			displayField: 'text',
-			store: TaskConsole.taskStore,
-			getDetailCard: function(item,parent){
-			 	var itemData = item.attributes.record.data,
-		        parentData = parent.attributes.record.data,
-				detailCard = new Ext.Panel({
-					scroll: 'vertical',
-					styleHtmlContent: true,
-					tpl: ["<h2>{text}</h2>","{priority}"]
-				});
-			 	detailCard.update(itemData);
-		        this.backButton.setText(parentData.text);
-				return detailCard;
-			}
-		});
-		*/
+		    store: TaskConsole.taskPendingStore,
+		    plugins: [
+		  		{
+                	ptype: 'listpaging',
+                	autoPaging: false
+            	}, {
+                	ptype: 'pullrefresh'
+            	}
+            ]
+		});				
 
 		TaskConsole.views.taskTabs = new Ext.TabPanel({
 
