@@ -30,7 +30,7 @@ Ext.override(Ext.plugins.ListPagingPlugin, {
 var App = new Ext.Application({
 	
 	name : 'TaskConsole',	
-	useLoadMask : true,	
+	useLoadMask : false,	
 	launch : function () {			
 
 		TaskConsole.views.mainToolbar = new Ext.Toolbar({
@@ -74,20 +74,20 @@ var App = new Ext.Application({
 		});
 
 		TaskConsole.taskQueueList = new Ext.List({
-		    fullscreen: true,		    
+		    fullscreen: false,		    
 		    itemTpl : '<div style="font-weight: bold;">{PROJECT}</div>{DESCRIPTION}',
 		    grouped : true,		    		    
 		    store: TaskConsole.taskQueueStore,
-		    onItemDisclosure : function(record,btn,index){
-			    Ext.Msg.Alert('Tap','Test');
+		    /*		    
+		    onItemDisclosure: function(record,btn,index){
+			    Ext.Msg.Alert('test');
 		    },
+		    */		    
 		    plugins: [
 		  		{
                 	ptype: 'listpaging',
                 	autoPaging: false
-            	}, {
-                	ptype: 'pullrefresh'
-            	}
+            	}            	
             ]
 		});
 
@@ -111,7 +111,7 @@ var App = new Ext.Application({
 		});
 
 		TaskConsole.taskPendingList = new Ext.List({
-		    fullscreen: true,		    
+		    fullscreen: false,		    
 		    itemTpl : '<div style="font-weight: bold;">{PROJECT}</div>{DESCRIPTION}',
 		    grouped : true,		    		    
 		    store: TaskConsole.taskPendingStore,
@@ -119,12 +119,19 @@ var App = new Ext.Application({
 		  		{
                 	ptype: 'listpaging',
                 	autoPaging: false
-            	}, {
-                	ptype: 'pullrefresh'
-            	}
+            	}				
             ]
 		});				
 
+		Ext.regModel('Note', {
+			fields: [
+						{name: 'DESCRIPTION', type: 'string'},
+						{name: 'TOPIC', type: 'string'}
+					]
+		});
+
+		
+		
 		TaskConsole.views.taskTabs = new Ext.TabPanel({
 
 			fullscreen: true,
@@ -145,6 +152,7 @@ var App = new Ext.Application({
 			fullscreen: true,			
 			layout: 'card',
 			cardAnimation: 'slide',
+			/*
 			tabBar: {
 		        dock: 'bottom',
 		        ui: 'light',
@@ -152,22 +160,30 @@ var App = new Ext.Application({
 		            pack: 'center'
 		        }
 		    },
-			dockedItems: [ TaskConsole.views.mainToolbar ],
+		    */
+			dockedItems: [ 
+			  			TaskConsole.views.mainToolbar,
+			  			TaskConsole.views.taskTabs 
+			]
+			/*
+			,
 			items: [
+				
+				
 				{
 			        title: 'Tasks',
 			        badgeText: '2',
-			        items: TaskConsole.views.taskTabs,		        
-			        iconCls: 'action',
-			        cls: 'card card5'
+			        items: TaskConsole.views.taskTabs		        
+			        iconCls: 'action'
 			    },			    
 			    {
 			        title: 'Notes',
 			        html: 'notes',
-			        iconCls: 'compose',
-			        cls: 'card card3'
+			        iconCls: 'compose'
 			    }
+			    
 			]
+			*/
 		});
 	
 	}	
