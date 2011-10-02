@@ -17,8 +17,7 @@ a{
 }
 
 #header{ 		
-	color: #444444;
-	padding: 5px 10px; 	
+	color: #444444;	
 }
 
 #footer{
@@ -31,7 +30,8 @@ a{
 	clear: right;
 	width: 300px;
 	font-weight: bold;
-	font-size: 18px;		
+	font-size: 22px;
+	padding: 5px 10px;		
 }
 
 #lnks{ 

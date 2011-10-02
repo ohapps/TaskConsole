@@ -1,12 +1,53 @@
 <div id="header">
+
+	<div id="main_toolbar"></div>
+
 	<div id="logo">
-		Task Console
-	</div>		
-	<div id="lnks">
-		<?php if( isset( $this->user ) ){ ?>
-			<?php if( $this->user != false ){ ?>
-				Welcome, <?= $this->user->getFirstName() ?> | <a href="<?= $this->baseUrl(); ?>/index/settings"><img src="<?= $this->baseUrl() ?>/html/images/cog.png" style="vertical-align: middle;"></img> settings</a> | <a href="<?= $this->baseUrl(); ?>/user/logout"><img src="<?= $this->baseUrl() ?>/html/images/house_go.png" style="vertical-align: middle;"></img> logout</a>
-			<?php } ?>
-		<?php } ?>		
-	</div>			
+		<a href="http://ohapps.com"><img alt="OHAPPS Logo" src="<?= $this->baseUrl(); ?>/html/images/ohapps_logo_small2.png" border=0 style="vertical-align: middle;"/></a> Task Console
+	</div>
+				
 </div>
+
+<script type="text/javascript">
+
+var main_toolbar = new Ext.Toolbar({
+
+    renderTo: 'main_toolbar',
+    height: 28,
+    items:     [                                                    
+                    '->'
+					<?php if( isset( $this->user ) ){ ?>
+					
+						<?php if( $this->user != false ){ ?>
+						
+						,                    
+	                    {
+	                        xtype: "tbtext",
+	                        text: "Welcome, <?= $this->user->getFirstName() ?>", 
+	                        style: 'font-weight: bold'          
+	                    },
+	                    '-',
+	                    { 
+	                        icon: "<?= $this->baseUrl() ?>/html/images/cog.png", 
+	                        tooltip: 'Settings',
+	                    	handler: function() { 
+	                        	document.location = '<?= $this->baseUrl(); ?>/index/settings' ; 
+	                    	} 
+	                    },
+	                    '-',
+	                    { 
+	                        icon: "<?= $this->baseUrl() ?>/html/images/door_out.png", 
+	                        tooltip: 'Logout',
+	                    	handler: function() { 
+	                        	document.location = '<?= $this->baseUrl(); ?>/user/logout' ; 
+	                    	} 
+	                    }
+							
+						<?php } ?>
+						
+					<?php } ?>                    		                                                    
+            ]
+    
+});
+
+</script>
