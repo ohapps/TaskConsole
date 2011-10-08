@@ -40,6 +40,12 @@ var App = new Ext.Application({
 				{
 					xtype: 'button',
 					text: 'logout'
+						
+					,
+					handler: function(){
+						document.location.href='<?= $this->baseUrl(); ?>/user/logout';
+					}
+					
 				}
 			]
 				
@@ -77,12 +83,7 @@ var App = new Ext.Application({
 		    fullscreen: false,		    
 		    itemTpl : '<div style="font-weight: bold;">{PROJECT}</div>{DESCRIPTION}',
 		    grouped : true,		    		    
-		    store: TaskConsole.taskQueueStore,
-		    /*		    
-		    onItemDisclosure: function(record,btn,index){
-			    Ext.Msg.Alert('test');
-		    },
-		    */		    
+		    store: TaskConsole.taskQueueStore,		    		    
 		    plugins: [
 		  		{
                 	ptype: 'listpaging',
@@ -100,7 +101,7 @@ var App = new Ext.Application({
 		    clearOnPageLoad: false,			
 			proxy: {
 				type: 'ajax',
-				url: '<?= $this->baseUrl(); ?>/tasks/user-tasks/status/pending',
+				url: '<?= $this->baseUrl(); ?>/tasks/user-tasks/status/queue',
 				extraParams: { start: 0, limit: 5, priorities: "1,2,3"  },
 			    reader: {
 			    	type: 'json',
@@ -125,12 +126,29 @@ var App = new Ext.Application({
 
 		Ext.regModel('Note', {
 			fields: [
-						{name: 'DESCRIPTION', type: 'string'},
-						{name: 'TOPIC', type: 'string'}
+						{name: 'text', type: 'string'}
 					]
-		});
+		});	
 
+		TaskConsole.note_store = new Ext.data.TreeStore({
+			model: 'Note',
+			proxy: {
+				type: 'ajax',
+				url: '<?= $this->baseUrl(); ?>/mobile/notes',				
+			    reader: {
+			    	type: 'tree',
+			        root: 'items'
+			    }
+			},
+			autoLoad: true
+		});
 		
+		TaskConsole.note_list = new Ext.NestedList({
+			fullscreen: true,
+			title: 'Notes',
+		    displayField: 'text',
+			store: TaskConsole.note_store			
+		});
 		
 		TaskConsole.views.taskTabs = new Ext.TabPanel({
 
@@ -143,6 +161,9 @@ var App = new Ext.Application({
 				},{
 					title: "Pending",
 					items: TaskConsole.taskPendingList
+				},{
+					title: "Notes",
+					items: TaskConsole.note_list
 				}
 			]
 										
@@ -151,39 +172,11 @@ var App = new Ext.Application({
 		TaskConsole.views.viewport = new Ext.TabPanel({
 			fullscreen: true,			
 			layout: 'card',
-			cardAnimation: 'slide',
-			/*
-			tabBar: {
-		        dock: 'bottom',
-		        ui: 'light',
-		        layout: {
-		            pack: 'center'
-		        }
-		    },
-		    */
+			cardAnimation: 'slide',			
 			dockedItems: [ 
 			  			TaskConsole.views.mainToolbar,
 			  			TaskConsole.views.taskTabs 
-			]
-			/*
-			,
-			items: [
-				
-				
-				{
-			        title: 'Tasks',
-			        badgeText: '2',
-			        items: TaskConsole.views.taskTabs		        
-			        iconCls: 'action'
-			    },			    
-			    {
-			        title: 'Notes',
-			        html: 'notes',
-			        iconCls: 'compose'
-			    }
-			    
-			]
-			*/
+			]			
 		});
 	
 	}	
