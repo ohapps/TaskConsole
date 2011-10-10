@@ -74,8 +74,10 @@ class UserController extends Zend_Controller_Action {
 		}
 		
 		// CHECK FOR MOBILE
-		if( $this->_helper->mobile->isMobile() === true || $this->_getParam('layout') == 'mobile' ){			
-			$this->_forward('login',null,null,array("layout"=>"mobile"));
+		if( $this->_helper->mobile->isMobile() === true || $this->_getParam('layout') == 'mobile' ){						
+			$this->_redirect("/mobile");
+		}else{
+			$this->_redirect("/");
 		}				
 					
 	}

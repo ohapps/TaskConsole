@@ -29,8 +29,7 @@ var App = new Ext.Application({
 				    	                document.location.href="<?= $this->success_url ?>";                
 				    	            },
 				    	            failure: function(){ 	            	
-				    	            	//invalid_label.show();
-				    	            	//login_form.getForm().findField("un").focus(); 
+				    	            	Ext.Msg.alert('Error', 'Invalid username and password.'); 
 				    	            }
 				            	});
 							}
