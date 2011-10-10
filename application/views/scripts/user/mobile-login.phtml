@@ -1,0 +1,47 @@
+<script type="text/javascript">
+
+var App = new Ext.Application({
+	
+	name : 'TaskConsole',	
+	useLoadMask : false,	
+	launch : function () {
+
+		TaskConsole.login = new Ext.form.FormPanel({
+			fullscreen: true,
+			submitOnAction: false,
+			items:  [
+			         	{
+				         	xtype: "textfield",
+				         	name: "un",
+				         	label: "username"
+			         	},{
+				         	xtype: "passwordfield",
+				         	name: "ps",
+				         	label: "password"
+			         	},{
+							xtype: "button",
+							text: 'login',
+							handler: function(){
+				         		TaskConsole.login.submit({
+				    	            url:"<?= $this->baseUrl(); ?>/user/auth", 
+				    	            waitMsg:"checking username and password ...",
+				    	            success: function(){				    	          
+				    	                document.location.href="<?= $this->success_url ?>";                
+				    	            },
+				    	            failure: function(){ 	            	
+				    	            	//invalid_label.show();
+				    	            	//login_form.getForm().findField("un").focus(); 
+				    	            }
+				            	});
+							}
+			         	}
+						
+					]
+			
+		});
+
+	}	
+});
+
+
+</script>
