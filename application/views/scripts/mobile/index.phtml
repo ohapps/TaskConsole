@@ -39,11 +39,9 @@ var App = new Ext.Application({
 			items: 	[
 				{
 					xtype: 'button',
-					text: 'logout'
-						
-					,
+					text: 'logout',
 					handler: function(){
-						document.location.href='<?= $this->baseUrl(); ?>/user/logout';
+						document.location.href='<?= $this->baseUrl(); ?>/user/logout/layout/mobile';
 					}
 					
 				}

@@ -68,6 +68,7 @@ class MobileController extends Zend_Controller_Action {
 		$this->_helper->json->sendJson( array( "items" => $data ) );
 		
 	}
-				
+
+	
 	
 }

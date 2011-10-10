@@ -38,20 +38,22 @@ class UserController extends Zend_Controller_Action {
 			// IF LINK IS RELATIVE THEN USE NON SSL PORT FOR REDIRECT
 			if( substr( $success_url,0,1) == "/" ){
 				$success_url = "http://" . $_SERVER["SERVER_NAME"] . $success_url;
-			}																	
+			}																				
 			
 			$this->view->success_url = $success_url;
 			
 			// CHECK FOR MOBILE
 			if( $this->_helper->mobile->isMobile() === true || $this->_getParam('layout') == 'mobile' ){
-				 
-				//$this->_helper->layout()->disableLayout();
+
+				$this->view->success_url = $success_url . "/mobile";
 				$this->_helper->layout()->setLayout('mobile');
 				$this->_helper->viewRenderer->setNoRender();
 				$this->view->failed = $this->_getParam('failed');
-				$this->render('login','mobile');
+				$this->render('mobile-login');
 								
 			}
+			
+			
 						
 		}else{
 			
@@ -71,7 +73,10 @@ class UserController extends Zend_Controller_Action {
 			$this->view->user = false;	
 		}
 		
-		//$this->_redirect("/");
+		// CHECK FOR MOBILE
+		if( $this->_helper->mobile->isMobile() === true || $this->_getParam('layout') == 'mobile' ){			
+			$this->_forward('login',null,null,array("layout"=>"mobile"));
+		}				
 					
 	}
 	
