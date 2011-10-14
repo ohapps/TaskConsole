@@ -183,7 +183,7 @@ var task_queue_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_queue_cm = new Ext.grid.ColumnModel([	 	
 	task_queue_sm,
-	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "", dataIndex: "ID", width: 28, align: "center", menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false, hidden: true },	
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false, groupable: false },
 	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false, groupable: false, renderer: formatLoadTaskProjectLink },
@@ -339,7 +339,7 @@ var task_pending_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_pending_cm = new Ext.grid.ColumnModel([
 	task_pending_sm,
-	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "", dataIndex: "ID", width: 28, align: "center", menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50, sortable: false, hidden: true },		
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false, groupable: false },
 	{ header: "Project", dataIndex: "PROJECT", width: 200, sortable: false, groupable: false, renderer: formatLoadTaskProjectLink },
@@ -495,7 +495,7 @@ var task_complete_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_complete_cm = new Ext.grid.ColumnModel([
 	task_complete_sm,
-	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "", dataIndex: "ID", width: 28, align: "center", menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
 	{ header: "Completed", dataIndex: "COMPLETED", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
@@ -630,7 +630,7 @@ var task_upcoming_sm = new Ext.grid.CheckboxSelectionModel();
 
 var task_upcoming_cm = new Ext.grid.ColumnModel([
 	task_upcoming_sm,
-	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "", dataIndex: "ID", width: 28, align: "center", menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
 	{ header: "Display Date", dataIndex: "DISPLAY_DATE", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
@@ -747,7 +747,7 @@ var task_upcoming_grid = new Ext.ux.EasyEditorGridPanel({
 });
 
 var task_search_cm = new Ext.grid.ColumnModel([	
-	{ header: "", dataIndex: "ID", width: 25, menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
+	{ header: "", dataIndex: "ID", width: 28, align: "center", menuDisabled: true, hideable: false, renderer: formatEditTaskLink },	
 	{ header: "Priority", dataIndex: "PRIORITY", width: 50 },
 	{ header: "Completed", dataIndex: "COMPLETED", width: 80, renderer: Ext.util.Format.dateRenderer("d-M-Y") },
 	{ header: "Categories", dataIndex: "CATEGORIES", width: 125, sortable: false },
