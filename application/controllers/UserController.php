@@ -23,41 +23,20 @@ class UserController extends Zend_Controller_Action {
 				header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"] );
 				exit();
 			}
-
-			// IF NO SUCCESS URL IS SET THEN USE THE RTN_URL PARAMETER
-			if( $userManager->getSuccessUrl() == "" && $this->_hasParam("rtn_url") ){
-				$success_url = $this->_getParam("rtn_url");
-			// IF NO SUCCESS URL AND RTN_URL PARAMETER IS SET THEN USE THE BASE URL	
-			}else if( $userManager->getSuccessUrl() == "" ){
-				$success_url = Zend_Controller_Front::getInstance()->getBaseUrl();
-			// ELSE USE THE SUCCESS URL IN THE SESSION	
-			}else{
-				$success_url = $userManager->getSuccessUrl();
-			}
-		
-			// IF LINK IS RELATIVE THEN USE NON SSL PORT FOR REDIRECT
-			if( substr( $success_url,0,1) == "/" ){
-				$success_url = "http://" . $_SERVER["SERVER_NAME"] . $success_url;
-			}																				
-			
-			$this->view->success_url = $success_url;
 			
 			// CHECK FOR MOBILE
 			if( $this->_helper->mobile->isMobile() === true || $this->_getParam('layout') == 'mobile' ){
 
-				$this->view->success_url = $success_url . "/mobile";
 				$this->_helper->layout()->setLayout('mobile');
 				$this->_helper->viewRenderer->setNoRender();
-				$this->view->failed = $this->_getParam('failed');
 				$this->render('mobile-login');
 								
-			}
-			
+			}			
 			
 						
 		}else{
 			
-			$this->_redirect("/");
+			$this->_redirect( $this->view->serverUrl() . $this->view->url(array('controller'=>'index','action'=>'index')) );
 			
 		}
 		

@@ -70,7 +70,7 @@ Ext.onReady(function() {
 	            waitMsg:"checking username and password ...",
 	            success: function(){
 	            	Ext.MessageBox.show({ title: 'Login Successful', progressText: 'Redirecting ...', width:300, wait:true, waitConfig: {interval:200}, closable:false });
-	                document.location.href="<?= $this->success_url ?>";                
+	                document.location.href="<?= $this->serverUrl() . $this->url(array('controller'=>'index','action'=>'index')) ?>";                
 	            },
 	            failure: function(){ 	            	
 	            	invalid_label.show();

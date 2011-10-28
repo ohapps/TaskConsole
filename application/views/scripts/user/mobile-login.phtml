@@ -23,10 +23,11 @@ var App = new Ext.Application({
 							text: 'login',
 							handler: function(){
 				         		TaskConsole.login.submit({
-				    	            url:"<?= $this->baseUrl(); ?>/user/auth", 
+				    	            url:"<?= $this->baseUrl(); ?>/user/auth",
+				    	            method: "POST", 
 				    	            waitMsg:"checking username and password ...",
 				    	            success: function(){				    	          
-				    	                document.location.href="<?= $this->success_url ?>";                
+				    	                document.location.href="<?= $this->serverUrl() . $this->url(array('controller'=>'mobile','action'=>'index')) ?>";                
 				    	            },
 				    	            failure: function(){ 	            	
 				    	            	Ext.Msg.alert('Error', 'Invalid username and password.'); 
