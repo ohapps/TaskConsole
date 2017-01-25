@@ -1,0 +1,8 @@
+Fixed - invalid timestamp in the Log.php file => $this->logger->log( $msg, Zend_Log::ERR);
+
+Fixed - invalid order by clause in the user-projects-paged Action in the projects controller
+Fixed - invalid order by clause in the user-tasks action in the tasks controller
+
+add the following to the file /etc/mysql/mysql.conf.d
+
+sql-mode = ""

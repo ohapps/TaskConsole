@@ -1,37 +1,37 @@
 <?php
 
 class Console_TaskTable extends Doctrine_Table{
-	
-	
-	public function getByUserId($user_id, $options = array( 'disp_high' => 1, 'disp_normal' => 1, 'disp_low' => 1 )){        
-        
+
+
+	public function getByUserId($user_id, $options = array( 'disp_high' => 1, 'disp_normal' => 1, 'disp_low' => 1 )){
+
     	$query = $this->createQuery('t')
-        		->leftJoin( 't.Project p' )        		
+        		->leftJoin( 't.Project p' )
             	->where('t.USER_ID = ?', $user_id);
-       		
+
     	return $query->execute();
-            	
+
     }
-    
-    
-	public function getPagedResultsByUserId($user_id, $options = array(), $page=1, $pageSize=50){        
-        
+
+
+	public function getPagedResultsByUserId($user_id, $options = array(), $page=1, $pageSize=50){
+
 		$sort = '';
-		
+
     	$query = $this->createQuery('t')
-        		->leftJoin( 't.Project p' )        		
+        		->leftJoin( 't.Project p' )
         		->leftJoin( 't.Categories c' )
-            	->where('t.USER_ID = ?', $user_id);        
-		
-		if(isset($options['category'])){			
+            	->where('t.USER_ID = ?', $user_id);
+
+		if(isset($options['category'])){
 			if( $options['category'] != "" ){
-				$query->andWhere("c.ID = ?", $options['category']);										    		
+				$query->andWhere("c.ID = ?", $options['category']);
 	    	}
 		}
-    	
+
 		if(isset($options['project'])){
-	    	if( $options['project'] != "" ){	    		
-	    		$query->andWhere("p.ID = ?", $options['project']);    		
+	    	if( $options['project'] != "" ){
+	    		$query->andWhere("p.ID = ?", $options['project']);
 	    	}
 		}
 
@@ -41,13 +41,13 @@ class Console_TaskTable extends Doctrine_Table{
 					$query->andWhere("t.COMPLETED is null")
 						  ->andWhere("t.QUEUE_ORDER is not null")
 						  ->andWhere('( t.DISPLAY_DATE <= CURDATE() or t.DISPLAY_DATE is null )');
-					$sort = 't.PRIORITY_ID, p.DESCRIPTION ASC';	  					
+					$sort = 't.PRIORITY_ID, p.DESCRIPTION ASC';
 					break;
 				case "pending":
 					$query->andWhere("t.COMPLETED is null")
-						  ->andWhere("t.QUEUE_ORDER is null")	
+						  ->andWhere("t.QUEUE_ORDER is null")
 						  ->andWhere('( t.DISPLAY_DATE <= CURDATE() or t.DISPLAY_DATE is null )');
-					$sort = 't.PRIORITY_ID, p.DESCRIPTION ASC';		  
+					$sort = 't.PRIORITY_ID, p.DESCRIPTION ASC';
 					break;
 				case "complete":
 					$query->andWhere("t.COMPLETED is not null");
@@ -55,10 +55,10 @@ class Console_TaskTable extends Doctrine_Table{
 				case "upcoming":
 					$query->andWhere("t.COMPLETED is null")
 						  ->andWhere('t.DISPLAY_DATE > CURDATE()');
-					break; 				
+					break;
 				case "search":
-					if(isset($options['keyword'])){											
-						$query->andWhere( "lower(t.description) like ?", '%' . strtolower($options['keyword']) . '%' );						
+					if(isset($options['keyword'])){
+						$query->andWhere( "lower(t.description) like ?", '%' . strtolower($options['keyword']) . '%' );
 					}
 					break;
 			}
@@ -71,52 +71,52 @@ class Console_TaskTable extends Doctrine_Table{
 				}
 			}
 		}
-		
+
 		if( isset($options['sort']) && isset($options['dir']) && $sort == '' ){
-			$sort = strtr( 
-				$options['sort'], 
+			$sort = strtr(
+				$options['sort'],
 				array(
 					"PRIORITY" => "t.PRIORITY_ID",
-					"PROJECT" => "p.DESCRIPTION"				
+					"PROJECT" => "p.DESCRIPTION"
 				)
 			)
-			. ' ' . $options['dir'];			
+			. ' ' . $options['dir'];
 		}
-		
+
 		if( $sort != '' ){
-			$query->orderBy( $sort  );
+			//$query->orderBy( $sort  );
 		}
-		
+
         $pager = new Doctrine_Pager(
          	$query,
             $page,
             $pageSize
         );
 
-        return $pager;            	       
-            	
+        return $pager;
+
     }
-    
-    
+
+
     public function getRecurringEvents($id){
-    	
+
     	return 	$this->createQuery('t')
     			->where('t.ORIG_ID = ?', $id)
     			->andWhere('t.COMPLETED is null')
     			->execute();
-    	
+
     }
-	
-    
+
+
 	public function getTasksInQueue($userId){
-    	
+
     	return 	$this->createQuery('t')
     			->where('t.USER_ID = ?', $userId)
     			->andWhere('t.COMPLETED is null')
     			->andWhere('t.QUEUE_ORDER is not null')
     			->execute();
-    	
+
     }
-    
-	
+
+
 }
